@@ -283,7 +283,41 @@ public class CertainBookStore implements BookStore, StockManager {
 	@Override
 	public synchronized List<Book> getTopRatedBooks(int numBooks)
 			throws BookStoreException {
-		throw new BookStoreException("Not implemented");
+
+		if (numBooks < 1) {
+			throw new BookStoreException("numBooks = " + numBooks
+					+ ", but it must be positive");
+		}
+
+		List<Book> topRated = new ArrayList<Book>();
+
+		// Create a sorted set with a comparator to ensure books sorted by rating.
+		Comparator<BookStoreBook> ratingsComparator = new RatingsComparator();
+		TreeSet<BookStoreBook> allBooksByRating = new TreeSet<BookStoreBook>(ratingsComparator);
+		
+		// Add all books from bookmap. They will be sorted by average rating.
+		allBooksByRating.addAll(bookMap.values());
+
+		if (allBooksByRating.size <= numBooks) {
+			// We need to add all the books.
+			int i = 0;
+			Iterator<BookStoreBook> bookItr = allBooksByRating.descendingIterator();
+			while (i < allBooksByRating.size()) {
+				topRated.add(bookItr.next().immutableBook());
+			}
+		}
+
+		else {
+			// Add the numBooks highest rated books.
+			int i = 0;
+			Iterator<BookStoreBook> bookItr = allBooksByRating.descendingIterator();
+			while (i < numBooks) {
+				topRated.add(bookItr.next().immutableBook());
+			}
+		}
+
+		return topRated;
+
 	}
 
 	@Override
