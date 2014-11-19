@@ -45,28 +45,19 @@ public class CertainBookStore implements BookStore, StockManager {
 		}
 	}
 
-	private synchronized void checkValidity(Set<Integer> isbnSet)
-	    throws BookStoreException {
-		for (Integer isbn : isbnSet) checkValidity(isbn);
-	}
-
 	/**
 	 * Auxiliary method to validate an book. Avoids duplicate code.
 	 */
-	private synchronized void checkValidity(Book book) throws BookStoreException {
+	private synchronized void checkValidity(StockBook book)
+	    throws BookStoreException {
 		checkValidity(book.getISBN());
-		if (BookStoreUtility.isEmpty(book.getTitle())    					 ||
-				BookStoreUtility.isEmpty(book.getAuthor())   					 ||
-				BookStoreUtility.isInvalidNoCopies(book.getNoCopies()) ||
+		if (BookStoreUtility.isEmpty(book.getTitle())    					  ||
+				BookStoreUtility.isEmpty(book.getAuthor())   	    			||
+				BookStoreUtility.isInvalidNoCopies(book.getNumCopies()) ||
 				book.getPrice() < 0.0) {
 			throw new BookStoreException(BookStoreConstants.BOOK
 					+ book.toString() + BookStoreConstants.INVALID);
 		}
-	}
-
-	private synchronized void checkValidity(Set<Book> books)
-	    throws BookStoreException {
-		for (Book book : books) checkValidity(book);
 	}
 
 	public synchronized void addBooks(Set<StockBook> bookSet)
@@ -211,12 +202,12 @@ public class CertainBookStore implements BookStore, StockManager {
 		if (isbnSet == null) {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
-		validateBooks(isbnSet);
+		for (Integer isbn : isbnSet) checkValidity(isbn);
 
 		List<StockBook> listBooks = new ArrayList<StockBook>();
 
-		for (Integer ISBN : isbnSet) {
-			listBooks.add(bookMap.get(ISBN).immutableStockBook());
+		for (Integer isbn : isbnSet) {
+			listBooks.add(bookMap.get(isbn).immutableStockBook());
 		}
 
 		return listBooks;
@@ -228,13 +219,13 @@ public class CertainBookStore implements BookStore, StockManager {
 		if (isbnSet == null) {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
-		validateBooks(isbnSet);
+		for (Integer isbn : isbnSet) checkValidity(isbn);
 
 		List<Book> listBooks = new ArrayList<Book>();
 
 		// Get the books
-		for (Integer ISBN : isbnSet) {
-			listBooks.add(bookMap.get(ISBN).immutableBook());
+		for (Integer isbn : isbnSet) {
+			listBooks.add(bookMap.get(isbn).immutableBook());
 		}
 		return listBooks;
 	}
@@ -311,18 +302,19 @@ public class CertainBookStore implements BookStore, StockManager {
 
 		// Check validity of input
 		for (BookRating bookRating : bookRatings) {
+			int isbn = bookRating.getISBN();
+			checkValidity(isbn);
+			Book book = bookMap.get(isbn);
 			int rating = bookRating.getRating();
-			Book book = bookRating.getBook();
 			if (rating < 0 || rating > 5) {
 				throw new BookStoreException("Invalid rating " + rating + " for book " +
 				                             book.getTitle());
 			}
-			checkValidity(book);
 		}
 
+		// Add ratings to store books
 		for (BookRating bookRating : bookRatings) {
-			BookStoreBook book = bookMap.get(bookRatings.getISBN());
-			book.setRatings(book.getRatings());
+			bookMap.get(bookRating.getISBN()).addRating(bookRating.getRating());
 		}
 
 	}
