@@ -31,7 +31,8 @@ public class CertainBookStore implements BookStore, StockManager {
 	}
 
 	/**
-	 * Auxiliary method to validate an ISBN numbers. Avoids duplicate code.
+	 * Auxiliary method to validate an ISBN number in order to avoid duplicate
+	 * code.
    */
 	private synchronized void checkValidity(Integer isbn)
 	    throws BookStoreException {
@@ -46,7 +47,7 @@ public class CertainBookStore implements BookStore, StockManager {
 	}
 
 	/**
-	 * Auxiliary method to validate an book. Avoids duplicate code.
+	 * Auxiliary method to validate a book in order to avoid duplicate code.
 	 */
 	private synchronized void checkValidity(StockBook book)
 	    throws BookStoreException {
