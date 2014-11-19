@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.Comparator;
 
 import com.acertainbookstore.interfaces.BookStore;
 import com.acertainbookstore.interfaces.StockManager;
@@ -299,7 +301,7 @@ public class CertainBookStore implements BookStore, StockManager {
 		// Add all books from bookmap. They will be sorted by average rating.
 		allBooksByRating.addAll(bookMap.values());
 
-		if (allBooksByRating.size <= numBooks) {
+		if (allBooksByRating.size() <= numBooks) {
 			// We need to add all the books.
 			int i = 0;
 			Iterator<BookStoreBook> bookItr = allBooksByRating.descendingIterator();
