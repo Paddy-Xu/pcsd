@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.acertainbookstore.business;
 
 import java.util.ArrayList;
@@ -25,11 +22,51 @@ import com.acertainbookstore.utils.BookStoreUtility;
  * defined in the BookStore
  */
 public class CertainBookStore implements BookStore, StockManager {
-	private Map<Integer, BookStoreBook> bookMap = null;
+
+	final private Map<Integer, BookStoreBook> bookMap;
 
 	public CertainBookStore() {
 		// Constructors are not synchronized
 		bookMap = new HashMap<Integer, BookStoreBook>();
+	}
+
+	/**
+	 * Auxiliary method to validate an ISBN numbers. Avoids duplicate code.
+   */
+	private synchronized void checkValidity(Integer isbn)
+	    throws BookStoreException {
+		if (BookStoreUtility.isInvalidISBN(isbn)) {
+			throw new BookStoreException(BookStoreConstants.ISBN + isbn
+					+ BookStoreConstants.INVALID);
+		}
+		if (!bookMap.containsKey(isbn)) {
+			throw new BookStoreException(BookStoreConstants.ISBN + isbn
+					+ BookStoreConstants.NOT_AVAILABLE);
+		}
+	}
+
+	private synchronized void checkValidity(Set<Integer> isbnSet)
+	    throws BookStoreException {
+		for (Integer isbn : isbnSet) checkValidity(isbn);
+	}
+
+	/**
+	 * Auxiliary method to validate an book. Avoids duplicate code.
+	 */
+	private synchronized void checkValidity(Book book) throws BookStoreException {
+		checkValidity(book.getISBN());
+		if (BookStoreUtility.isEmpty(book.getTitle())    					 ||
+				BookStoreUtility.isEmpty(book.getAuthor())   					 ||
+				BookStoreUtility.isInvalidNoCopies(book.getNoCopies()) ||
+				book.getPrice() < 0.0) {
+			throw new BookStoreException(BookStoreConstants.BOOK
+					+ book.toString() + BookStoreConstants.INVALID);
+		}
+	}
+
+	private synchronized void checkValidity(Set<Book> books)
+	    throws BookStoreException {
+		for (Book book : books) checkValidity(book);
 	}
 
 	public synchronized void addBooks(Set<StockBook> bookSet)
@@ -38,31 +75,22 @@ public class CertainBookStore implements BookStore, StockManager {
 		if (bookSet == null) {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
-		// Check if all are there
+
+		// Validate input and check if books are there
 		for (StockBook book : bookSet) {
-			int ISBN = book.getISBN();
-			String bookTitle = book.getTitle();
-			String bookAuthor = book.getAuthor();
-			int noCopies = book.getNumCopies();
-			float bookPrice = book.getPrice();
-			if (BookStoreUtility.isInvalidISBN(ISBN)
-					|| BookStoreUtility.isEmpty(bookTitle)
-					|| BookStoreUtility.isEmpty(bookAuthor)
-					|| BookStoreUtility.isInvalidNoCopies(noCopies)
-					|| bookPrice < 0.0) {
-				throw new BookStoreException(BookStoreConstants.BOOK
-						+ book.toString() + BookStoreConstants.INVALID);
-			} else if (bookMap.containsKey(ISBN)) {
-				throw new BookStoreException(BookStoreConstants.ISBN + ISBN
+			checkValidity(book);
+			Integer isbn = book.getISBN();
+			if (bookMap.containsKey(isbn)) {
+				throw new BookStoreException(BookStoreConstants.ISBN + isbn
 						+ BookStoreConstants.DUPLICATED);
 			}
 		}
 
+		// Add books to store
 		for (StockBook book : bookSet) {
-			int ISBN = book.getISBN();
-			bookMap.put(ISBN, new BookStoreBook(book));
+			bookMap.put(book.getISBN(), new BookStoreBook(book));
 		}
-		return;
+
 	}
 
 	public synchronized void addCopies(Set<BookCopy> bookCopiesSet)
@@ -179,17 +207,11 @@ public class CertainBookStore implements BookStore, StockManager {
 
 	public synchronized List<StockBook> getBooksByISBN(Set<Integer> isbnSet)
 			throws BookStoreException {
+
 		if (isbnSet == null) {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
-		for (Integer ISBN : isbnSet) {
-			if (BookStoreUtility.isInvalidISBN(ISBN))
-				throw new BookStoreException(BookStoreConstants.ISBN + ISBN
-						+ BookStoreConstants.INVALID);
-			if (!bookMap.containsKey(ISBN))
-				throw new BookStoreException(BookStoreConstants.ISBN + ISBN
-						+ BookStoreConstants.NOT_AVAILABLE);
-		}
+		validateBooks(isbnSet);
 
 		List<StockBook> listBooks = new ArrayList<StockBook>();
 
@@ -202,18 +224,11 @@ public class CertainBookStore implements BookStore, StockManager {
 
 	public synchronized List<Book> getBooks(Set<Integer> isbnSet)
 			throws BookStoreException {
+
 		if (isbnSet == null) {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
-		// Check that all ISBNs that we rate are there first.
-		for (Integer ISBN : isbnSet) {
-			if (BookStoreUtility.isInvalidISBN(ISBN))
-				throw new BookStoreException(BookStoreConstants.ISBN + ISBN
-						+ BookStoreConstants.INVALID);
-			if (!bookMap.containsKey(ISBN))
-				throw new BookStoreException(BookStoreConstants.ISBN + ISBN
-						+ BookStoreConstants.NOT_AVAILABLE);
-		}
+		validateBooks(isbnSet);
 
 		List<Book> listBooks = new ArrayList<Book>();
 
@@ -287,9 +302,29 @@ public class CertainBookStore implements BookStore, StockManager {
 	}
 
 	@Override
-	public synchronized void rateBooks(Set<BookRating> bookRating)
+	public synchronized void rateBooks(Set<BookRating> bookRatings)
 			throws BookStoreException {
-		throw new BookStoreException("Not implemented");
+
+		if (bookRatings == null) {
+			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
+		}
+
+		// Check validity of input
+		for (BookRating bookRating : bookRatings) {
+			int rating = bookRating.getRating();
+			Book book = bookRating.getBook();
+			if (rating < 0 || rating > 5) {
+				throw new BookStoreException("Invalid rating " + rating + " for book " +
+				                             book.getTitle());
+			}
+			checkValidity(book);
+		}
+
+		for (BookRating bookRating : bookRatings) {
+			BookStoreBook book = bookMap.get(bookRatings.getISBN());
+			book.setRatings(book.getRatings());
+		}
+
 	}
 
 	public synchronized void removeAllBooks() throws BookStoreException {
@@ -302,12 +337,12 @@ public class CertainBookStore implements BookStore, StockManager {
 		if (isbnSet == null) {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
-		for (Integer ISBN : isbnSet) {
-			if (BookStoreUtility.isInvalidISBN(ISBN))
-				throw new BookStoreException(BookStoreConstants.ISBN + ISBN
+		for (Integer isbn : isbnSet) {
+			if (BookStoreUtility.isInvalidISBN(isbn))
+				throw new BookStoreException(BookStoreConstants.ISBN + isbn
 						+ BookStoreConstants.INVALID);
-			if (!bookMap.containsKey(ISBN))
-				throw new BookStoreException(BookStoreConstants.ISBN + ISBN
+			if (!bookMap.containsKey(isbn))
+				throw new BookStoreException(BookStoreConstants.ISBN + isbn
 						+ BookStoreConstants.NOT_AVAILABLE);
 		}
 
