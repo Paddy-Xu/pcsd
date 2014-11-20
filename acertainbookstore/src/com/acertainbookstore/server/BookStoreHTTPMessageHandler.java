@@ -230,6 +230,12 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 						.serializeObjectToXMLString(bookStoreResponse);
 				response.getWriter().println(listBooksxmlString);
 				break;
+
+			// case RATEBOOKS:
+			// 	xml = BookStoreUtility.extractPOSTDataFromRequest(request);
+			// 	Set<BookRating> ratingsList = (Set<BookRating>) BookStoreUtility
+			// 			.deserializeXMLStringToObject(xml);
+
 				
 			default:
 				System.out.println("Unhandled message tag");

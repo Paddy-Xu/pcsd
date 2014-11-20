@@ -1,0 +1,13 @@
+We should not assume any order of method calls in test cases.
+
+We can add hints to junit tests to make methods run just as we create an object and just before the method is   garbage collected. (addBefore and addAfter).
+
+We should test functionalities by changing the state through some API function (rateBooks, buyBooks etc.) and then check that the state is as expected through other API functions (getBooks, getTopRated etc.).
+
+State before exceptions should be the same as state after exceptions.
+
+We should use Java 1.7, since the hand-out version of XStream is buggy in Java 1.8 (in general 1.7 is recommended as this is the version for which the hand-out has been tested).
+
+Be careful that you never return references to objects on the server! Always copy objects and return references to the copies.
+
+Be very careful when using the Microsoft Azure cloud. A lot of hackers want access to Azure, because they can use Azure for 1337 stuff. Also don't use Azure to do anything too weird, you will make Microshaft nervous and possibly angry.
