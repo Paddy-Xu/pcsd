@@ -146,10 +146,28 @@ public class BookStoreHTTPProxy implements BookStore {
 		BookStoreUtility.SendAndRecv(this.client, exchange);		
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<Book> getTopRatedBooks(int numBooks) throws BookStoreException {
-		// TODO Auto-generated method stub
-		throw new BookStoreException("Not implemented");
+		ContentExchange exchange = new ContentExchange();
+		String urlEncodedNumBooks = null;
+
+		// Encode numBooks to string.
+		try {
+			urlEncodedNumBooks = URLEncoder.encode(Integer.toString(numBooks),
+					"UTF-8");
+		} catch (UnsupportedEncodingException ex) {
+			throw new BookStoreException("unsupported encoding of numbooks", ex);
+		}
+
+		// Set url with query and parameter.
+		String urlString = serverAddress + "/"
+				+ BookStoreMessageTag.TOPRATED + "?"
+				+ BookStoreConstants.BOOK_NUM_PARAM + "=" + urlEncodedNumBooks;
+
+		exchange.setURL(urlString);
+
+		return (List<Book>) BookStoreUtility.SendAndRecv(this.client, exchange);
 	}
 
 }
