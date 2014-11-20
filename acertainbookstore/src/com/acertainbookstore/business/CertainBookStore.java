@@ -292,35 +292,22 @@ public class CertainBookStore implements BookStore, StockManager {
 					+ ", but it must be positive");
 		}
 
-		List<Book> topRated = new ArrayList<Book>();
-
 		// Create a sorted set with a comparator to ensure books sorted by rating.
-		Comparator<BookStoreBook> ratingsComparator = new RatingsComparator();
-		TreeSet<BookStoreBook> allBooksByRating = new TreeSet<BookStoreBook>(ratingsComparator);
-		
+		RatingsComparator ratingsComparator = new RatingsComparator();
+		TreeSet<BookStoreBook> allBooksByRating =
+		    new TreeSet<BookStoreBook>(ratingsComparator);
+
 		// Add all books from bookmap. They will be sorted by average rating.
 		allBooksByRating.addAll(bookMap.values());
+		numBooks = Math.min(allBooksByRating.size(), numBooks);
+		List<Book> topRated = new ArrayList<Book>(numBooks);
 
-		if (allBooksByRating.size() <= numBooks) {
-			// We need to add all the books.
-			int i = 0;
-			Iterator<BookStoreBook> bookItr = allBooksByRating.descendingIterator();
-			while (i < allBooksByRating.size()) {
-				topRated.add(bookItr.next().immutableBook());
-			}
-		}
-
-		else {
-			// Add the numBooks highest rated books.
-			int i = 0;
-			Iterator<BookStoreBook> bookItr = allBooksByRating.descendingIterator();
-			while (i < numBooks) {
-				topRated.add(bookItr.next().immutableBook());
-			}
+		Iterator<BookStoreBook> bookItr = allBooksByRating.descendingIterator();
+		for (int i = 0; i < numBooks; ++i) {
+			topRated.add(bookItr.next().immutableBook());
 		}
 
 		return topRated;
-
 	}
 
 	@Override
@@ -348,11 +335,10 @@ public class CertainBookStore implements BookStore, StockManager {
 		for (BookRating bookRating : bookRatings) {
 			int isbn = bookRating.getISBN();
 			checkValidity(isbn);
-			Book book = bookMap.get(isbn);
 			int rating = bookRating.getRating();
 			if (rating < 0 || rating > 5) {
 				throw new BookStoreException("Invalid rating " + rating + " for book " +
-				                             book.getTitle());
+				                             bookMap.get(isbn).getTitle());
 			}
 		}
 
