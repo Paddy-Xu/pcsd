@@ -2,6 +2,8 @@ package com.acertainbookstore.client.tests;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +16,7 @@ import org.junit.Test;
 
 import com.acertainbookstore.business.Book;
 import com.acertainbookstore.business.BookCopy;
+import com.acertainbookstore.business.BookRating;
 import com.acertainbookstore.business.CertainBookStore;
 import com.acertainbookstore.business.ImmutableStockBook;
 import com.acertainbookstore.business.StockBook;
@@ -26,7 +29,7 @@ import com.acertainbookstore.utils.BookStoreException;
 
 /**
  * Test class to test the BookStore interface
- * 
+ *
  */
 public class BookStoreTest {
 
@@ -311,6 +314,55 @@ public class BookStoreTest {
 		List<StockBook> booksInStorePostTest = storeManager.getBooks();
 		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
 				&& booksInStorePreTest.size() == booksInStorePostTest.size());
+
+	}
+
+	/**
+	 * Tests rateBooks() as well as getTopRatedBooks(), as both are needed for
+	 * verification anyway.
+	 */
+	@Test
+	public void testRateBooks() throws BookStoreException {
+
+		HashSet<StockBook> booksToAdd = new HashSet<StockBook>(2);
+		booksToAdd.add(new ImmutableStockBook(
+				TEST_ISBN + 1, "Lord of the Strings", "J.R.R. Token", (float) 666,
+				NUM_COPIES, 0, 0, 0, false));
+		booksToAdd.add(new ImmutableStockBook(
+				TEST_ISBN + 2, "War and keys", "Lev Toystory", (float) 123, NUM_COPIES,
+				0, 0, 0, false));
+		storeManager.addBooks(booksToAdd);
+
+		HashSet<BookRating> validRatings = new HashSet<BookRating>(2);
+		ArrayList<BookRating> invalidRatings = new ArrayList<BookRating>(2);
+		validRatings.add(new BookRating(TEST_ISBN, 1));
+		validRatings.add(new BookRating(TEST_ISBN + 1, 5));
+		validRatings.add(new BookRating(TEST_ISBN + 2, 2));
+		invalidRatings.add(new BookRating(-3, 1));
+		invalidRatings.add(new BookRating(TEST_ISBN + 3, 2));
+		invalidRatings.add(new BookRating(TEST_ISBN + 1, -5));
+
+		// Positive test
+		client.rateBooks(validRatings);
+		List<Book> topRated = client.getTopRatedBooks(1);
+		assertEquals(topRated.get(0).getISBN(), TEST_ISBN + 1);
+		topRated = client.getTopRatedBooks(999);
+		assertTrue(topRated.size() == 3);
+		assertTrue(topRated.get(0).getISBN() == TEST_ISBN + 1);
+		assertTrue(topRated.get(1).getISBN() == TEST_ISBN + 2);
+		assertTrue(topRated.get(2).getISBN() == TEST_ISBN);
+
+		// Negative test
+		for (BookRating invalid : invalidRatings) {
+			try {
+				HashSet<BookRating> invalidIsbn = new HashSet<BookRating>(1);
+				invalidIsbn.add(invalid);
+				client.rateBooks(invalidIsbn);
+				fail();
+			} catch (BookStoreException err) {
+				;
+			}
+		}
 
 	}
 

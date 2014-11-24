@@ -42,6 +42,13 @@ public class CertainBookStore implements BookStore, StockManager {
 			throw new BookStoreException(BookStoreConstants.ISBN + isbn
 					+ BookStoreConstants.INVALID);
 		}
+	}
+
+	/**
+	 * Auxiliary method to check availability of a book by ISBN number
+	 */
+	private synchronized void checkAvailability(Integer isbn)
+	    throws BookStoreException {
 		if (!bookMap.containsKey(isbn)) {
 			throw new BookStoreException(BookStoreConstants.ISBN + isbn
 					+ BookStoreConstants.NOT_AVAILABLE);
@@ -70,7 +77,7 @@ public class CertainBookStore implements BookStore, StockManager {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
 
-		// Validate input and check if books are there
+		// Validate input
 		for (StockBook book : bookSet) {
 			checkValidity(book);
 			Integer isbn = book.getISBN();
@@ -205,7 +212,10 @@ public class CertainBookStore implements BookStore, StockManager {
 		if (isbnSet == null) {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
-		for (Integer isbn : isbnSet) checkValidity(isbn);
+		for (Integer isbn : isbnSet) {
+			checkValidity(isbn);
+			checkAvailability(isbn);
+		}
 
 		List<StockBook> listBooks = new ArrayList<StockBook>();
 
@@ -222,7 +232,10 @@ public class CertainBookStore implements BookStore, StockManager {
 		if (isbnSet == null) {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
-		for (Integer isbn : isbnSet) checkValidity(isbn);
+		for (Integer isbn : isbnSet) {
+			checkValidity(isbn);
+			checkAvailability(isbn);
+		}
 
 		List<Book> listBooks = new ArrayList<Book>();
 
@@ -335,6 +348,7 @@ public class CertainBookStore implements BookStore, StockManager {
 		for (BookRating bookRating : bookRatings) {
 			int isbn = bookRating.getISBN();
 			checkValidity(isbn);
+			checkAvailability(isbn);
 			int rating = bookRating.getRating();
 			if (rating < 0 || rating > 5) {
 				throw new BookStoreException("Invalid rating " + rating + " for book " +
