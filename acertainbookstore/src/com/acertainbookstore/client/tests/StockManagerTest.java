@@ -3,6 +3,8 @@ package com.acertainbookstore.client.tests;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +30,7 @@ import com.acertainbookstore.utils.BookStoreException;
 
 /**
  * Test class to test the StockManager interface
- * 
+ *
  */
 public class StockManagerTest {
 
@@ -41,8 +43,8 @@ public class StockManagerTest {
 
 	/**
 	 * Initializes new instance
-	 * 
-	 * 
+	 *
+	 *
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() {
@@ -110,7 +112,7 @@ public class StockManagerTest {
 
 	/**
 	 * Checks whether an insertion of a books with an invalid ISBN is rejected
-	 * 
+	 *
 	 * @throws BookStoreException
 	 */
 	@Test
@@ -349,11 +351,11 @@ public class StockManagerTest {
 	 */
 	@Test
 	public void testRemoveBooks() throws BookStoreException {
-		List<StockBook> booksAdded = new ArrayList<StockBook>();
-		booksAdded.add(getDefaultBook());
+		HashMap<Integer, StockBook> booksAdded = new HashMap<Integer, StockBook>();
+		booksAdded.put(getDefaultBook().getISBN(), getDefaultBook());
 
 		List<StockBook> booksInStoreList = storeManager.getBooks();
-		assertTrue(booksInStoreList.equals(booksAdded));
+		assertTrue(booksInStoreList.containsAll(booksAdded.values()));
 
 		Set<StockBook> booksToAdd = new HashSet<StockBook>();
 		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 1,
@@ -364,13 +366,13 @@ public class StockManagerTest {
 				"Dennis Ritchie and Brian Kerninghan", (float) 50, NUM_COPIES,
 				0, 0, 0, false));
 
-		booksAdded.addAll(booksToAdd);
+		for (StockBook book : booksToAdd) booksAdded.put(book.getISBN(), book);
 
 		// Add books in bookstore
 		storeManager.addBooks(booksToAdd);
 		booksInStoreList = storeManager.getBooks();
-		assertTrue(booksInStoreList.containsAll(booksAdded)
-				&& booksInStoreList.size() == booksAdded.size());
+		assertTrue(booksInStoreList.containsAll(booksAdded.values()));
+		assertTrue(booksInStoreList.size() == booksAdded.size());
 
 		Set<Integer> isbnSet = new HashSet<Integer>();
 		isbnSet.add(TEST_ISBN);
@@ -378,14 +380,12 @@ public class StockManagerTest {
 
 		// Remove books with testISBN
 		storeManager.removeBooks(isbnSet);
-
-		booksAdded.remove(2);
-		booksAdded.remove(0);
+		for (Integer isbn : isbnSet) booksAdded.remove(isbn);
 
 		// Check that testISBN was removed
 		booksInStoreList = storeManager.getBooks();
-		assertTrue(booksInStoreList.containsAll(booksAdded)
-				&& booksInStoreList.size() == booksAdded.size());
+		assertTrue(booksInStoreList.containsAll(booksAdded.values()));
+		assertTrue(booksInStoreList.size() == booksAdded.size());
 	}
 
 	/**
@@ -434,6 +434,54 @@ public class StockManagerTest {
 
 		booksInStoreList = storeManager.getBooks();
 		assertTrue(booksInStoreList.size() == 0);
+	}
+
+	@Test
+	public void testGetBooksInDemand() throws BookStoreException {
+
+		HashSet<StockBook> booksToAdd = new HashSet<StockBook>(3);
+		booksToAdd.add(new ImmutableStockBook(
+				TEST_ISBN + 1, "Theory of Colours", "Johann Wolfgang von Goethe",
+				(float) 1000, 5, 0, 0, 0, false));
+		booksToAdd.add(new ImmutableStockBook(
+				TEST_ISBN + 2, "The Count of Monte Cristo", "Alexandre Dumas",
+				(float) 200, 5, 0, 0, 0, false));
+		booksToAdd.add(new ImmutableStockBook(
+				TEST_ISBN + 3, "Northern Lights", "Philip Pullman",
+				(float) 5, 5, 0, 0, 0, false));
+		storeManager.addBooks(booksToAdd);
+
+		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>(3);
+		booksToBuy.add(new BookCopy(TEST_ISBN + 1, 10));
+		booksToBuy.add(new BookCopy(TEST_ISBN + 2, 4));
+		booksToBuy.add(new BookCopy(TEST_ISBN + 3, 10));
+
+		// Positive test
+		try {
+			client.buyBooks(booksToBuy);
+			fail();
+		} catch (BookStoreException err) {
+			assertEquals(err.getMessage(),
+			             BookStoreConstants.BOOK + BookStoreConstants.NOT_AVAILABLE);
+			List<StockBook> booksInDemand = storeManager.getBooksInDemand();
+			assertEquals(booksInDemand.size(), 2);
+		}
+
+		// Negative test
+		ArrayList<BookCopy> invalidCopies = new ArrayList<BookCopy>(2);
+		booksToBuy.add(new BookCopy(-1, 1));
+		booksToBuy.add(new BookCopy(1, -1));
+		for (BookCopy copy : invalidCopies) {
+			HashSet<BookCopy> bookToBuy = new HashSet<BookCopy>();
+			bookToBuy.add(copy);
+			try {
+				client.buyBooks(bookToBuy);
+				fail();
+			} catch (BookStoreException err) {
+				;
+			}
+		}
+		
 	}
 
 	@AfterClass

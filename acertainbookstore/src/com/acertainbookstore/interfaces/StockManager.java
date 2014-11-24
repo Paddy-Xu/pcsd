@@ -11,13 +11,13 @@ import com.acertainbookstore.utils.BookStoreException;
 /**
  * These methods needs to be implemented by clients who wants to sell items in
  * the book store.
- * 
+ *
  */
 public interface StockManager {
 
 	/**
 	 * Adds the books in bookSet to the stock.
-	 * 
+	 *
 	 * @param bookSet
 	 * @return
 	 * @throws BookStoreException
@@ -26,9 +26,8 @@ public interface StockManager {
 
 	/**
 	 * Add copies of the existing book to the bookstore.
-	 * 
-	 * @param ISBN
-	 * @param noCopies
+	 *
+	 * @param bookCopiesSet
 	 * @return
 	 * @throws BookStoreException
 	 */
@@ -37,7 +36,7 @@ public interface StockManager {
 
 	/**
 	 * Returns the list of books in the bookstore
-	 * 
+	 *
 	 * @return
 	 * @throws BookStoreException
 	 */
@@ -47,7 +46,7 @@ public interface StockManager {
 	 * Returns the books matching the set of ISBNs given, is different to
 	 * getBooks in the BookStore interface because of the return type of the
 	 * books
-	 * 
+	 *
 	 * @param isbns
 	 * @return
 	 * @throws BookStoreException
@@ -57,7 +56,7 @@ public interface StockManager {
 
 	/**
 	 * Returns the list of books which has sale miss
-	 * 
+	 *
 	 * @return
 	 * @throws BookStoreException
 	 */
@@ -65,7 +64,7 @@ public interface StockManager {
 
 	/**
 	 * Books are marked/unmarked as an editor pick
-	 * 
+	 *
 	 * @return
 	 * @throws BookStoreException
 	 */
@@ -74,14 +73,14 @@ public interface StockManager {
 
 	/**
 	 * Clean up the bookstore - remove all the books and the associated data
-	 * 
+	 *
 	 * @throws BookStoreException
 	 */
 	public void removeAllBooks() throws BookStoreException;
 
 	/**
 	 * Clean up the bookstore selectively for the list of isbns provided
-	 * 
+	 *
 	 * @param isbnSet
 	 * @throws BookStoreException
 	 */

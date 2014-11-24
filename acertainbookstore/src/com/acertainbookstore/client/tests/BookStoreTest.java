@@ -326,10 +326,10 @@ public class BookStoreTest {
 
 		HashSet<StockBook> booksToAdd = new HashSet<StockBook>(2);
 		booksToAdd.add(new ImmutableStockBook(
-				TEST_ISBN + 1, "Lord of the Strings", "J.R.R. Token", (float) 666,
-				NUM_COPIES, 0, 0, 0, false));
+				TEST_ISBN + 1, "Elements", "Euclid", (float) 666, NUM_COPIES, 0, 0, 0,
+				false));
 		booksToAdd.add(new ImmutableStockBook(
-				TEST_ISBN + 2, "War and keys", "Lev Toystory", (float) 123, NUM_COPIES,
+				TEST_ISBN + 2, "War and peace", "Lev Tolstoy", (float) 123, NUM_COPIES,
 				0, 0, 0, false));
 		storeManager.addBooks(booksToAdd);
 
