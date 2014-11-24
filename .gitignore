@@ -1,4 +1,6 @@
+*.aux
 *.class
+*.log
 *.pdf
 *.jar
 *.tar.gz

@@ -1,0 +1,69 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{listings}
+
+% Listings
+\newlength{\eightytt}
+\newcommand{\testthewidth}{%
+  \fontsize{\dimen0}{0}\selectfont
+  \sbox0{x\global\dimen1=0.6em}%
+  \ifdim \dimexpr80\dimen1+23pt>\textwidth
+    \advance\dimen0 by -.1pt
+    \expandafter\testthewidth
+  \else
+    \global\eightytt\dimen0
+  \fi
+}
+\AtBeginDocument{%
+  \dimen0=\csname f@size\endcsname pt
+  \begingroup
+  \ttfamily
+  \testthewidth
+  \endgroup
+  \lstset{
+    % columns=fullflexible,
+    basicstyle=\fontsize{\eightytt}{1.2\eightytt}\ttfamily
+               \color[HTML]{F8F8F2},
+    breaklines=true
+  }
+}
+\lstset{
+  breaklines=true,
+  backgroundcolor=\color[HTML]{282828},
+  framexleftmargin=2pt,
+  inputencoding=utf8,
+  captionpos=b,
+  numbers=none,
+  numberstyle = \fontsize{\eightytt}{1.2\eightytt}
+                \color[HTML]{282828},
+  keywordstyle =    \color[HTML]{F92672}\ttfamily,
+  commentstyle =    \color[HTML]{75715E}\ttfamily,
+  stringstyle =     \color[HTML]{E6DB74}\ttfamily,
+  identifierstyle = \color[HTML]{F8F8F2}\ttfamily,
+  showstringspaces=false
+}
+\lstdefinestyle{compact} {aboveskip={0.1\baselineskip}}
+\lstdefinestyle{notcompact} {aboveskip={1.2\baselineskip}}
+\lstdefinestyle{numbered} {numbers=left,xleftmargin=0pt}
+\lstdefinestyle{appendix} {backgroundcolor=\color{white}}
+
+\begin{document}
+
+\section{Fundamental Abstractions} % Question 1
+
+\subsection{} % Question 1.1
+An array of start/end addresses as consecutive integers mark the beginning of a new underlying machine memory. When given an address in the single address space, binary search is used to find the correct interval, which is mapped to a machine. The offset to the beginning of the target machine is subtracted from the single address space address to obtain the local, physical address. \\
+The map of addresses is stored centrally, but the mapping itself can be done from the caller, as they will have lookup table stored locally. These will listen to the central node, and if a new machine is added, a message is sent from the central address map to all listening clients. \\
+When an address has been translated, a message is sent to the machine owning the address in question. The caller waits for a response limited by a timeout period. If a response is received, the operation finishes, indiciating whether the operation was successful or not to the caller. If a timeout occurs, the local entry of the target machine will be marked as offline, broadcasting this by a message to the central node, who will again broadcast the offline status to all other listeners. The central node is then responsible for periodically pinging any offline machines, returning their status to normal if a response is received and broadcasting this to listeners. All such messages will have a timestamp so the central node uses the most up-to-date information.\\
+Adding machines is straightforward, as the address mapping will be extended with the additional amount of memory and broadcasted to listening callers. Removing machines would simply invalidate the entry in the table and broadcast this to all listeners. Replacing a machine would require the new machine to manage the same amount of memory as its predecessor, and copying the old memory to the new would of course be necessary to maintain state. \\
+Scalability could be improved by adding communication nodes between the central table and the callers, responsible for communicating change in state of the address table between the central node and the callers.
+
+\subsection{} % Question 1.2
+
+
+\section{Techniques for Performance}
+
+\subsection{}
+
+\end{document}
