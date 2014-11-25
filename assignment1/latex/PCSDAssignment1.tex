@@ -24,9 +24,10 @@ Johannes de Fine Licht % Names
 \subsection*{1.} % Question 1.1
 
 An array of start/end addresses as consecutive integers mark the beginning of a new underlying machine memory. When given an address in the single address space, binary search is used to find the correct interval, which is mapped to a machine. The offset to the beginning of the target machine is subtracted from the single address space address to obtain the local, physical address. The map of addresses is stored centrally, but the mapping itself can be done from the caller, as they will have the address table stored locally. These will listen to the central node, and if a new machine is added, a message is sent from the central address map to all listening clients. \\
-When an address has been translated, a message is sent to the machine owning the address in question. The caller waits for a response limited by a timeout period. If a response is received, the operation finishes, indiciating whether the operation was successful or not to the caller. If a timeout occurs, the local entry of the target machine will be marked as offline, broadcasting this by a message to the central node, who will again broadcast the offline status to all other listeners. The central node is then responsible for periodically pinging any offline machines, returning their status to normal if a response is received and broadcasting this to listeners. All such messages will have a timestamp so the central node uses the most up-to-date information.\\
+When an address has been translated, a message is sent to the machine owning the address in question. The caller waits for a response limited by a timeout period. If a response is received, the operation finishes, indicating whether the operation was successful or not to the caller. If a timeout occurs, the local entry of the target machine will be marked as offline, broadcasting this by a message to the central node, who will again broadcast the offline status to all other listeners. The central node is then responsible for periodically pinging any offline machines, returning their status to normal if a response is received and broadcasting this to listeners. All such messages will have a timestamp so the central node uses the most up-to-date information.\\
 % Adding machines is straightforward, as the address mapping will be extended with the additional amount of memory and broadcasted to listening callers. Removing machines would simply invalidate the entry in the table and broadcast this to all listeners. Replacing a machine would require the new machine to manage the same amount of memory as its predecessor, and copying the old memory to the new would of course be necessary to maintain state. \\
-Scalability could be improved by adding communication nodes between the central table and the callers, responsible for communicating change in state of the address table between the central node and the callers.
+When we add new machines, the time it takes to do the binary search and determine which machine holds the given memory interval will increase, this will negatively affect scalability. This extra time should however be insignificant compared to the time it takes to send messages between the machines. Another consideration with regards to scalability, is that having more machines should on average decrease the amount of requests each machine has to handle and the gain from this should far outweigh the added time it takes to do the binary search. 
+Scalability could also be improved by adding communication nodes between the central table and the callers, responsible for communicating change in state of the address table between the central node and the callers.
 
 \subsection*{2.} % Question 1.2
 
@@ -76,11 +77,11 @@ bool write(address, data) {
 \subsection*{3.} % Question 1.3
 
 Operations against regular main memory on typical architectures are atomic when performed on aligned addresses of the native word size. For unaligned addresses or for operations of other sizes, read/write tearing can occur. \\
-For our abstraction, atomicity should not be guaranteed by the memory model. Rather, an ownership concept should be introduced, keeping a table of memory intervals on the local machines owned by specific processes, denying access to any process that is not an owner.
+For our abstraction, atomicity should not be guaranteed by the memory model. Rather, an ownership concept should be introduced, keeping a table of memory intervals on the local machines owned by specific processes, denying access to any process that is not an owner. To achieve atomicity, we would need to implement locking. The lock would be implemented by a client sending a lock request for a given memory address to the node to which the address is mapped. The node will respond with a message acknowledging that the client now has the lock. Once the client receives this acknowledge message, he knows that any succeeding operations will be atomic with respect to any other client. To avoid deadlocks, we will need to have timeouts. The client should timeout if the lock acknowledgement never arrives. The node should timeout on the lock and send a message to the client that the lock has timed out if the client never sends any instructions after taking the lock, or if the client forgets to release the lock. We should reset the timeout timer every time the client sends a new instruction. By using timestamps in the messages, the client would be able to know which of his requests have not been carried out, because they were sent after the lock was released. If someone else already has the lock, the client should be put in queue and be notified that he is in a queue. The client can then choose to timeout on this wait if he wishes to. The client should then notify the node that he no longer wishes to take the lock. To avoid inter-client deadlocks, we would need to ensure that any client can only hold one lock at a time. To enforce this, we would need to send lock requests through the central table and the central table could then refuse to pass along lock requests if the client has not yet released a previous lock.
 
 \subsection*{4.} % Question 1.4
 
-Adding machines would be straightforward, as this would simply involve adding entries to the address table. The design allows replacing machines, but changing memory intervals would be a very expensive operation, requiring the memory of all machines to be shifted accordingly. If the intervals are not changed, swapping out machines is simply a question of updating the table entry and communicating this change to the network.
+Adding machines would be straightforward, as this would simply involve adding entries to the address table. The design allows replacing machines, but changing memory intervals would be a very expensive operation, requiring the memory of all machines to be shifted accordingly. If the intervals are not changed, swapping out machines is simply a question of updating the table entry and communicating this change to the network. If a machine goes down unexpectedly, then all data in that machines memory will of course be lost and immediately unavailable. The only real way to mediate this type of failure, would be to have redundant machines, so that we always have two copies of the data in the cluster, once the cluster becomes aware that a machine is down, the central table is updated so that all future requests are sent to the redundant machine. This would of course at least double the monetary cost of the implementation, or cut the capacity in half, depending on how you look at it.
 
 \section*{Question 2: Techniques for Performance}
 
@@ -134,7 +135,7 @@ When running on the same JVM, the isolation is still intact, as the functionalit
 
 \subsubsection*{(a)} % Question 3.2.a
 
-There is a naming service in the passing and handling of messages, which are a string representations of application-space operations.
+There is a naming service in the passing and handling of messages, which are string representations of application-space operations.
 
 \subsubsection*{(b)} % Question 3.2.b
 
@@ -142,7 +143,7 @@ Since communication between client and server happens over HTTP, the first namin
 
 \subsection*{3.} % Question 3.3
 
-The architecture emplots at-most-once semantics, as no retries (at-least-once) or further communication (approaching exactly-once) is attempted on a failed request.
+The architecture employs at-most-once semantics, as no retries (at-least-once) or further communication (approaching exactly-once) is attempted on a failed request.
 
 \subsection*{4.} % Question 3.4
 
