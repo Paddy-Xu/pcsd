@@ -2,68 +2,138 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{listings}
+\usepackage{verbatim}
 
-% Listings
-\newlength{\eightytt}
-\newcommand{\testthewidth}{%
-  \fontsize{\dimen0}{0}\selectfont
-  \sbox0{x\global\dimen1=0.6em}%
-  \ifdim \dimexpr80\dimen1+23pt>\textwidth
-    \advance\dimen0 by -.1pt
-    \expandafter\testthewidth
-  \else
-    \global\eightytt\dimen0
-  \fi
-}
-\AtBeginDocument{%
-  \dimen0=\csname f@size\endcsname pt
-  \begingroup
-  \ttfamily
-  \testthewidth
-  \endgroup
-  \lstset{
-    % columns=fullflexible,
-    basicstyle=\fontsize{\eightytt}{1.2\eightytt}\ttfamily
-               \color[HTML]{F8F8F2},
-    breaklines=true
-  }
-}
-\lstset{
-  breaklines=true,
-  backgroundcolor=\color[HTML]{282828},
-  framexleftmargin=2pt,
-  inputencoding=utf8,
-  captionpos=b,
-  numbers=none,
-  numberstyle = \fontsize{\eightytt}{1.2\eightytt}
-                \color[HTML]{282828},
-  keywordstyle =    \color[HTML]{F92672}\ttfamily,
-  commentstyle =    \color[HTML]{75715E}\ttfamily,
-  stringstyle =     \color[HTML]{E6DB74}\ttfamily,
-  identifierstyle = \color[HTML]{F8F8F2}\ttfamily,
-  showstringspaces=false
-}
-\lstdefinestyle{compact} {aboveskip={0.1\baselineskip}}
-\lstdefinestyle{notcompact} {aboveskip={1.2\baselineskip}}
-\lstdefinestyle{numbered} {numbers=left,xleftmargin=0pt}
-\lstdefinestyle{appendix} {backgroundcolor=\color{white}}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
 \begin{document}
+
+\begin{center}
+\textsc{\LARGE Principles of Computer System Design}\\[0.3cm] % Context
+\HRule \\[0.4cm]
+{ \huge \bfseries Assignment 1} % Main title
+\HRule \\[0.4cm]
+\large
+Johannes de Fine Licht % Names
+\\Philip Graae
+\\\today
+\end{center}
 
 \section{Fundamental Abstractions} % Question 1
 
 \subsection{} % Question 1.1
-An array of start/end addresses as consecutive integers mark the beginning of a new underlying machine memory. When given an address in the single address space, binary search is used to find the correct interval, which is mapped to a machine. The offset to the beginning of the target machine is subtracted from the single address space address to obtain the local, physical address. \\
-The map of addresses is stored centrally, but the mapping itself can be done from the caller, as they will have lookup table stored locally. These will listen to the central node, and if a new machine is added, a message is sent from the central address map to all listening clients. \\
+An array of start/end addresses as consecutive integers mark the beginning of a new underlying machine memory. When given an address in the single address space, binary search is used to find the correct interval, which is mapped to a machine. The offset to the beginning of the target machine is subtracted from the single address space address to obtain the local, physical address. The map of addresses is stored centrally, but the mapping itself can be done from the caller, as they will have the address table stored locally. These will listen to the central node, and if a new machine is added, a message is sent from the central address map to all listening clients. \\
 When an address has been translated, a message is sent to the machine owning the address in question. The caller waits for a response limited by a timeout period. If a response is received, the operation finishes, indiciating whether the operation was successful or not to the caller. If a timeout occurs, the local entry of the target machine will be marked as offline, broadcasting this by a message to the central node, who will again broadcast the offline status to all other listeners. The central node is then responsible for periodically pinging any offline machines, returning their status to normal if a response is received and broadcasting this to listeners. All such messages will have a timestamp so the central node uses the most up-to-date information.\\
-Adding machines is straightforward, as the address mapping will be extended with the additional amount of memory and broadcasted to listening callers. Removing machines would simply invalidate the entry in the table and broadcast this to all listeners. Replacing a machine would require the new machine to manage the same amount of memory as its predecessor, and copying the old memory to the new would of course be necessary to maintain state. \\
+% Adding machines is straightforward, as the address mapping will be extended with the additional amount of memory and broadcasted to listening callers. Removing machines would simply invalidate the entry in the table and broadcast this to all listeners. Replacing a machine would require the new machine to manage the same amount of memory as its predecessor, and copying the old memory to the new would of course be necessary to maintain state. \\
 Scalability could be improved by adding communication nodes between the central table and the callers, responsible for communicating change in state of the address table between the central node and the callers.
 
 \subsection{} % Question 1.2
 
+\begin{verbatim}
+// Caller-side
+data read(address) {
+  entry = binarySearch(addressTable, address)
+  localAddress = address - entry.offset
+  requestRead(entry.machine, localAddress, TIMEOUT_LIMIT)
+  (response, timeout) = waitForResponse()
+  if (timeout) {
+    reportOffline(entry.machine)
+    throw exception
+  }
+  if (response.status == ERROR) throw exception
+  return response.data
+}
+
+// Machine-side
+void handle(request) {
+  if (request.type == READ) {
+    dispatchReaderThread(request)
+  } else if (request.type == WRITE) {
+    dispatchWriterThread(request)
+  }
+}
+\end{verbatim}
+
+Translates the address by using the locally stored table, then sends a read-request to the machine mapped to the found entry. The machine listens for requests and dispatches reader/writer threads to service the request.
+
+\begin{verbatim}
+bool write(address, data) {
+  entry = binarySearch(addressTable, address)
+  localAddress = address - entry.offset
+  requestWrite(entry.machine, localAddress, data, TIMEOUT_LIMIT)
+  (response, timeout) = waitForResponse()
+  if (timeout) {
+    reportOffline(entry.machine)
+    throw exception
+  }
+  if (response.status == ERROR) throw exception
+}
+\end{verbatim}
+
+Same as above.
+
+\subsection{} % Question 1.3
+
+Operations against regular main memory on typical architectures are atomic when performed on aligned addresses of the native word size. For unaligned addresses or for operations of other sizes, read/write tearing can occur. \\
+For our abstraction, atomicity should not be guaranteed by the memory model. Rather, an ownership concept should be introduced, keeping a table of memory intervals on the local machines owned by specific processes, denying access to any process that is not an owner.
+
+\subsection{} % Question 1.4
+
+Adding machines would be straightforward, as this would simply involve adding entries to the address table. The design allows replacing machines, but changing memory intervals would be a very expensive operation, requiring the memory of all machines to be shifted accordingly. If the intervals are not changed, swapping out machines is simply a question of updating the table entry and communicating this change to the network.
 
 \section{Techniques for Performance}
 
-\subsection{}
+\subsection{} % Question 2.1
+
+Concurrency typically reduces the \emph{average latency} experienced from a system by facilitating multiple processes simultaneously, but adds overhead to individual processes and requests, increasing the \emph{minimal latency} experienced. Overhead comes from synchronization/concurrency control between hardware threads or from bottlenecks in a concurrent pipeline. \\
+Even in an \emph{embarassingly parallel} problem, concurrency can have a negative impact through effects such as \emph{false sharing} between processor cores. This is a consequence of the cache coherency protocol, in which different processors operating on the same cache line will invalidate the line and force inter-core synchronization. In extreme cases this can lead to negative scaling with the amount of processor cores of an otherwise entirely parallel problem.
+
+\subsection{} % Question 2.2
+
+\subsubsection*{Batching}
+The process of grouping a number of requests waiting to be processed and exploiting this for performance. This can come from sending multiple requests to the next stage of a pipeline, from reordering requests or even from vectorization of computations. \\
+An example is when sending messages is an expensive operation in a bottleneck of a pipeline, and grouping several requests in a single message can increase the throughput.
+
+\subsubsection*{Dallying}
+Done by purposely delaying execution of requests waiting to be processed in order to exploit batching, or to completely eliminate requests that are invalided by others. \\
+This can happen when a request with a later timestamp wants to write to the same location as a request with an earlier timestamp, allowing the earlier request to be discarded.
+
+\subsection{} % Question 2.3
+
+Caching is an example of a fast path optimization, because it optimizes the most common scenario. In the context of CPU caches, this means loading more memory than requested and putting it close to the die, making subsequent accesses to the same or adjacent memory faster by orders of magnitude. If a subsequent memory access is done to a far-away location in memory, however, a resulting cache-miss not only triggers a slow load from memory, but also has to repopulate the cache.
+
+\section{Questions for Discussion on Architecture} % Question 3
+
+\subsection{} % Question 3.1
+
+\subsubsection{} % Question 3.1.a
+
+The architecture owes its modularity to the interface abstraction of the bookstore, allowing free substitution of the underlying classes as long as they conform to the interfaces.
+
+\subsubsection{} % Question 3.1.b
+
+The stock manager and the book store are interfaced by two distinct HTTP services, so separation of access can be achieved by only providing the relevant one. However, since a single handler processes all requests and no verification is done to the authenticity of the source, a third party knowing the message interface could easily gain access to all server-side functionality.
+
+\subsubsection{} % Question 3.1.c
+
+When running on the same JVM, the isolation is still intact, as the functionality is still interfaced through the two distinctions of access.
+
+\subsection{} % Question 3.2
+
+\subsubsection{} % Question 3.2.a
+
+There is a naming service in the passing and handling of messages, which are a string representations of application-space operations.
+
+\subsubsection{} % Question 3.2.b
+
+Since communication between client and server happens over HTTP, the first naming mechanisms that requests will encounter is the DNS system, translating human-friendly domain names into actual IP addresses.
+
+\subsection{} % Question 3.3
+
+The architecture emplots at-most-once semantics, as no retries (at-least-once) or further communication (approaching exactly-once) is attempted on a failed request.
+
+\subsection{} % Question 3.4
+
+
 
 \end{document}
