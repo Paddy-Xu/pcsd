@@ -1,0 +1,7 @@
+digraph G {
+  nodesep=1;
+  ratio=1.0;
+  splines=false;
+  T1 -> T2;
+  T3 -> T2;
+}
