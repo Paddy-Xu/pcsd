@@ -74,15 +74,39 @@ Schedule two, reproduced above, correspondence to the precedence graph in figure
 The precedence graph, see figure~\ref{p2}, is acyclic and hence is conflict serializable. In particular schedule two, is equivalent with a serial schedule where transaction two is performed last. As schedule 2 is conflict serializable, schedule 2 could be scheduled by a scheduler following Strict two phase locking. The injection of shared and exclusive locks required if the scheduler was using Strict two phase locking is reproduced below, figure~\ref{locks}.
 \begin{figure}[h!]
 \texttt{T1: S(X)\hspace{95pt}E(Y)RS(X)RE(Y)\\
-T2:\hspace{105pt}S(Z)\hspace{90pt}E(X) E(Y)RS(Z)RE(X)RE(Y)\\
+T2:\hspace{105pt}S(Z)\hspace{90pt}E(X)E(Y)RS(Z)RE(X)RE(Y)\\
 T3:\hspace{50pt}E(Z)RE(Z)}
 \label{locks}
-\caption{Shared and exclusive locks that need to be acquired in order for schedule two, see figure~\ref{sch2}, to be scheduled using Strict two phase locking. \texttt{S(Q)} acquires a shared lock on Q and \texttt{RS(Q)} releases it again, exclusive locks follow the same semantics, only with an \texttt{E}.}
+\caption{Shared and exclusive locks that need to be acquired in order for schedule two, see figure~\ref{sch2}, to be scheduled using Strict two phase locking. \texttt{S(Q)} acquires a shared lock on \texttt{Q} and \texttt{RS(Q)} releases the lock on \texttt{Q}, exclusive locks follow the same semantics, only with an \texttt{E}.}
 \end{figure}
 \section*{Question 2: Optimistic Concurrency Control}
 \subsection*{Scenario 1}
+\begin{figure}[h!]
+\texttt{T1: RS(T1) = \{1, 2, 3\}, WS(T1) = \{3\},\\
+T1 completes before T3 starts.\\
+T2: RS(T2) = \{2, 3, 4\}, WS(T2) = \{4, 5\},\\
+T2 completes before T3 begins with its write phase.\\
+T3: RS(T3) = \{3, 4, 6\}, WS(T3) = \{3\},\\
+allow commit or rollback?}
+\end{figure}
 \subsection*{Scenario 2}
+\begin{figure}[h!]
+\texttt{T1: RS(T1) = \{2, 3, 4, 5\}, WS(T1) = \{4\},\\
+T1 completes before T3 begins with its write phase.\\
+T2: RS(T2) = \{6, 7, 8\}, WS(T2) = \{6\},\\
+T2 completes read phase before T3 does.\\
+T3: RS(T3) = \{2, 3, 5, 7, 8\}, WS(T3) = \{7, 8\},\\
+allow commit or rollback?}
+\end{figure}
 \subsection*{Scenario 3}
+\begin{figure}[h!]
+\texttt{T1: RS(T1) = \{2, 3, 4, 5\}, WS(T1) = \{4\},\\
+T1 completes before T3 begins with its write phase.\\
+T2: RS(T2) = \{6, 7, 8\}, WS(T2) = \{6\},\\
+T2 completes before T3 begins with its write phase.\\
+T3: RS(T3) = \{2, 3, 5, 7, 8\}, WS(T3) = \{7, 8\},\\
+allow commit or rollback?}
+\end{figure}
 \section*{Programming Task}
 \section*{Questions for Discussion on Architecture} % Question 3
 \subsection*{1.} % Question 3.1
