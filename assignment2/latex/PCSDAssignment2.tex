@@ -3,6 +3,7 @@
 \usepackage[english]{babel}
 \usepackage{listings}
 \usepackage{tikz}
+\usepackage{amsmath,amssymb}
 \tikzset{main node/.style={circle,fill=white!20,draw,minimum size=1cm,inner sep=0pt},}
 \usepackage{verbatim}
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
@@ -88,7 +89,14 @@ T2: RS(T2) = \{2, 3, 4\}, WS(T2) = \{4, 5\},\\
 T2 completes before T3 begins with its write phase.\\
 T3: RS(T3) = \{3, 4, 6\}, WS(T3) = \{3\},\\
 allow commit or rollback?}
+\caption{Scenario one.}
+\label{sc1}
 \end{figure}
+In scenario one, see figure~\ref{sc1}, will have to rollback because of the offending object \texttt{4} in the write set of transaction two and the read set of transaction three. The conflict occurs because transaction two completes before transactions threes begins its write phase, and the intersection of their sets are non-empty.
+\begin{align}
+WS(T2) \cap RS(T3) &= \{4, 5\} \cap \{3, 4, 5\}\\
+&= \{4\} \neq \emptyset
+\end{align}
 \subsection*{Scenario 2}
 \begin{figure}[h!]
 \texttt{T1: RS(T1) = \{2, 3, 4, 5\}, WS(T1) = \{4\},\\
@@ -97,7 +105,14 @@ T2: RS(T2) = \{6, 7, 8\}, WS(T2) = \{6\},\\
 T2 completes read phase before T3 does.\\
 T3: RS(T3) = \{2, 3, 5, 7, 8\}, WS(T3) = \{7, 8\},\\
 allow commit or rollback?}
+\caption{Scenario two.}
+\label{sc2}
 \end{figure}
+In scenario two, see figure~\ref{sc2}, will have to rollback of the offending object \texttt{3} in the write set of transaction one and the read set of transaction three. The conflict occurs because transaction one completes before transactions threes begins its write phase, and the intersection of their sets are non-empty.
+\begin{align}
+WS(T1) \cap RS(T3) &= \{3\} \cap \{3, 4, 5, 6, 7\}\\
+&= \{3\} \neq \emptyset
+\end{align}
 \subsection*{Scenario 3}
 \begin{figure}[h!]
 \texttt{T1: RS(T1) = \{2, 3, 4, 5\}, WS(T1) = \{4\},\\
@@ -106,7 +121,16 @@ T2: RS(T2) = \{6, 7, 8\}, WS(T2) = \{6\},\\
 T2 completes before T3 begins with its write phase.\\
 T3: RS(T3) = \{2, 3, 5, 7, 8\}, WS(T3) = \{7, 8\},\\
 allow commit or rollback?}
+\caption{Scenario three.}
+\label{sc3}
 \end{figure}
+In scenario three, see figure~\ref{sc3}, transaction three can commit as there are no offending objects. 
+\begin{align}
+WS(T1) \cap RS(T3) &= \{4\} \cap \{2, 3, 5, 7, 8\}\\
+&= \emptyset\\
+WS(T2) \cap RS(T3) &= \{6\} \cap \{2, 3, 5, 7, 8\}\\
+&= \emptyset
+\end{align}
 \section*{Programming Task}
 \section*{Questions for Discussion on Architecture} % Question 3
 \subsection*{1.} % Question 3.1
