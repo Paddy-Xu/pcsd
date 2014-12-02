@@ -72,7 +72,7 @@ Schedule two, reproduced above, corresponds to the precedence graph in figure~\r
 \caption{Precedence graph for Schedule one, see figure~\ref{sch2}.}
 \label{p2}
 \end{figure}
-The precedence graph, see figure~\ref{p2}, is acyclic and hence is conflict serializable. In particular, schedule two is equivalent with a serial schedule where transaction two is performed last. As schedule 2 is conflict serializable, schedule 2 could be scheduled by a scheduler following Strict two phase locking. The injection of shared and exclusive locks, required if the scheduler was using Strict two phase locking, is reproduced below in figure 5.
+The precedence graph, see figure~\ref{p2}, is acyclic and hence is conflict serializable. In particular, schedule two is equivalent with a serial schedule where transaction two is performed last. As schedule 2 is conflict serializable, schedule 2 could be scheduled by a scheduler following Strict two phase locking. The injection of shared and exclusive locks, required if the scheduler was using Strict two phase locking, is reproduced below, figure~\ref{locks}.
 \begin{figure}[h!]
 \texttt{T1: S(X)\hspace{95pt}E(Y)RS(X)RE(Y)\\
 T2:\hspace{105pt}S(Z)\hspace{90pt}E(X)E(Y)RS(Z)RE(X)RE(Y)\\
@@ -133,7 +133,7 @@ WS(T2) \cap RS(T3) &= \{6\} \cap \{2, 3, 5, 7, 8\}\\
 \end{align}
 \section*{Programming Task}
 \subsection*{Lock implementation}
-Concurrency control is achieved by a readers/writers-lock protecting all critical sections in methods accessing the book map. Methods that make no changes to the map or its entries acquire the readers lock which allows parallel access, while methods that manipulate the map have to acquire the writers lock. A \verb|ReentrantReadWriteLock| is used with the fairness parameter set to true in order to prevent starving of writers. \\
+Concurrency control is achieved by a readers/writers-lock protecting all critical sections in methods accessing the book map. Methods that make no changes to the map or its entries acquire the readers lock which allows parallel access, while methods that manipulate the map have to acquire the writers lock. A \verb|ReetrantReadWriteLock| is used with the fairness parameter set to true in order to prevent starving of writers. \\
 Concurrency is achieved when multiple read-operations happen in parallel, but all addition/removal of books, purchases of books and adding of copies is sequential. \\
 Atomicity is achieved by always acquiring the central lock when entering the critical section of a method, so all transactions are all-or-nothing.
 \\
