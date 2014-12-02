@@ -48,8 +48,13 @@ Schedule one, reproduced above, corresponds to the precedence graph in figure~\r
 \caption{Precedence graph for Schedule one, see figure~\ref{sch1}.}
 \label{p1}
 \end{figure}
+<<<<<<< HEAD
 The precedence graph, see figure~\ref{p1}, contains a cycle between transactions: \texttt{T1,T2,T3} and is hence not conflict serializable. As schedulers using Strict two phase locking allows only conflict serializable schedules, schedule one is not conflict serializable and therefore cannot have been produced by a scheduler following Strict two phase locking.
-\subsection*{Schedule 2} 
+\subsection*{Schedule 2}
+=======
+The precedence graph, see figure~\ref{p1}, contains a cycle between transactions: \texttt{T1,T2,T3} and is hence not conflict serializable. As schedulers using Strict two phase locking allows only conflict serializable schedules. Schedule one is not conflict serializable and therefore cannot have been produced by a scheduler following Strict two phase locking.
+\subsection*{Schedule 2}
+>>>>>>> Description of locks and tests.
 \begin{figure}[h!]
 \texttt{T1: R(X)\hspace{150pt}W(Y) C\\
 T2:\hspace{130pt}R(Z)\hspace{120pt}W(X) W(Y) C\\
@@ -124,7 +129,7 @@ allow commit or rollback?}
 \caption{Scenario three.}
 \label{sc3}
 \end{figure}
-In scenario three, see figure~\ref{sc3}, transaction three can commit as there are no offending objects. 
+In scenario three, see figure~\ref{sc3}, transaction three can commit as there are no offending objects.
 \begin{align}
 WS(T1) \cap RS(T3) &= \{4\} \cap \{2, 3, 5, 7, 8\}\\
 &= \emptyset\\
@@ -132,8 +137,20 @@ WS(T2) \cap RS(T3) &= \{6\} \cap \{2, 3, 5, 7, 8\}\\
 &= \emptyset
 \end{align}
 \section*{Programming Task}
-
-In order to improve the locking protocol we have implemented we need a more fine grained locking protocol. Currently we are locking all books in the mapping that stores them, to improve this we have to lock individual books. When adding a new book we would also would have to construct a new lock. The locks would be stored in an array and when we wanted to interact with books, through method calls, we would acquire locks for only the books we wanted to manipulate. To avoid deadlocks we would have to sort the locks to insure we always acquired them in the same order. Sorting the locks based on the ISBN of the affected books would be an option as the ISBNs are unique. Implementing a protocol as described, would allow for concurrent manipulation of mapping of books, hence increasing the concurrency.
+\subsection*{Lock implementation}
+Concurrency control is achieved by a readers/writers-lock protecting all critical sections in methods accessing the book map. Methods that make no changes to the map or its entries acquire the readers lock which allows parallel access, while methods that manipulate the map have to acquire the writers lock. A \verb|ReetrantReadWriteLock| is used with the fairness parameter set to true in order to prevent starving of writers. \\
+Concurrency is achieved when multiple read-operations happen in parallel, but all addition/removal of books, purchases of books and adding of copies is sequential. \\
+Atomicity is achieved by always acquiring the central lock when entering the critical section of a method, so all transactions are all-or-nothing.
+\subsection*{Added tests}
+The implementation introduces four tests, implemented in BookStoreTest:
+\subsubsection*{Test 1}
+Implemented as \verb|testConcurrency1| and performs the test describes in the assignment text: one thread continously buys books while the other adds copies to the stock. The order in which execution happens is nondeterministic, but the numbers are chosen so books are never sold out, so that the final stock can be asserted to be at the initial amount.
+\subsubsection*{Test 2}
+Implemented as \verb|testConcurrency2|, performing the second test described in the assignment text. This is done by spawning one extra thread repeatedly buying books and adding back copies, while the main thread queries the state of the database for a set number of repetitions. It is asserted that the amount of copies are one of the two allowed amounts, and that they are both in their bought stage or in their added stage (as transactions have to be atomic). Once the desired amount of repetitions is run, the thread manipulating the books is interrupted.
+\subsubsection*{Test 3}
+Implemented as \verb|testConcurrency3|. Tests mutual exclusion for adding books and removing books from the store. Two threads are spawned, each repeatedly adding and removing books to/from the store. There is no set order of execution, so the main thread will assert that the database is in \emph{any} of the accepted states, meaning either all books have been added or all books have been removed. Both the \verb|getBooks| and \verb|getBooksByISBN| method are tested in this way.
+\subsubsection*{Test 4}
+Implemented as \verb|testConcurrency4|. This is a stress test of system, spawning five threads for each of the four methods \emph{buyBooks}, \emph{addCopies}, \emph{addBooks} and \emph{removeBooks}, which will all continously perform their operations on the system as long as the test is running. This test should in particular catch any deadlocks or other unreleased locks that might occur. The test will terminate successfully after \emph{addCopies} and \emph{addBooks} have been run for a specified amount of repetitions.
 \section*{Questions for Discussion on Architecture} % Question 3
 \subsection*{1.} % Question 3.1
 The implemented locking protocol is equivalent to the Strict Conservative two phase locking protocol at a method level. The implemented locking protocol acquire the lock as the first part of the method call and release the lock again when the transaction is either completed or aborted. In the implemented locking protocol, methods that write to the bookMap, will acquire an exclusive lock on on the entire book mapping and methods that only read will acquire a shared lock also on the entire book mapping, and hence atomicity of predicate reads are a non-issue as these would require a finer granularity in the locking protocol.
