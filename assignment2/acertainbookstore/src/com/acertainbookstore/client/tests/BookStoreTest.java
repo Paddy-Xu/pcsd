@@ -403,10 +403,9 @@ public class BookStoreTest {
 		// one
 		for (int i = 0; i < repetitions; ++i) {
 			List<StockBook> bookList = storeManager.getBooks();
-			for (StockBook book : bookList) {
-				int numCopies = book.getNumCopies();
-				assertTrue(numCopies == 50 || numCopies == 100);
-			}
+			int numberOfCopies = bookList.get(0).getNumCopies();
+			assertTrue(numberOfCopies == 50 || numberOfCopies == 100);
+			assertEquals(numberOfCopies, bookList.get(1).getNumCopies());
 		}
 
 		modifyThread.interrupt();
