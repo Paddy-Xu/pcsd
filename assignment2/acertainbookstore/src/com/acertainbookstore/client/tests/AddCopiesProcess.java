@@ -1,6 +1,5 @@
 package com.acertainbookstore.client.tests;
 
-// import java.util.Random;
 import java.util.Set;
 
 import com.acertainbookstore.business.BookCopy;
@@ -14,27 +13,29 @@ public class AddCopiesProcess implements Runnable {
   private final int repetitions;
 
   public AddCopiesProcess(StockManager stockManager, Set<BookCopy> bookCopies,
-                          int repetitions) {
+                          int repetitions) throws BookStoreException {
     this.stockManager = stockManager;
     this.bookCopies = bookCopies;
+    if (repetitions < 0) {
+      throw new BookStoreException("Invalid number of repetitions");
+    }
     this.repetitions = repetitions;
   }
 
+  public AddCopiesProcess(StockManager stockManager, Set<BookCopy> bookCopies) {
+    this.stockManager = stockManager;
+    this.bookCopies = bookCopies;
+    this.repetitions = -1;
+  }
+
   public void run() {
-    // Random rng = new Random();
-    // int waitMin = 0;
-    // int waitDiff = 50 - waitMin + 1;
-    for (int i = 0; i < repetitions; ++i) {
+    for (int i = 0; i != repetitions; ++i) {
       try {
         stockManager.addCopies(bookCopies);
       } catch (BookStoreException err) {
-        return;
+        ;
       }
-      // try {
-      //   Thread.sleep(waitMin + rng.nextInt(waitDiff));
-      // } catch (InterruptedException err) {
-      //   ;
-      // }
+      if (Thread.interrupted()) return;
     }
   }
 

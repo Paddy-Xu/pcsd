@@ -3,6 +3,7 @@ package com.acertainbookstore.client.tests;
 import static org.junit.Assert.*;
 
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -318,6 +319,11 @@ public class BookStoreTest {
 
 	}
 
+	/**
+	 * Spawns two threads that buy books and remove copies in an indeterministic
+	 * fashion, verifying that the final amount of books correspondings to the sum
+	 * of operations performed by the two threads.
+	 */
 	@Test
 	public void testConcurrency1() throws BookStoreException {
 
@@ -362,6 +368,11 @@ public class BookStoreTest {
 
 	}
 
+	/**
+	 * Continously buys/adds copies of books to the store in one thread, while
+	 * another thread probes the stock a number of times to verify that the result
+	 * is always in a valid state.
+	 */
 	@Test
 	public void testConcurrency2() throws BookStoreException {
 
@@ -399,6 +410,124 @@ public class BookStoreTest {
 		}
 
 		modifyThread.interrupt();
+
+	}
+
+	/**
+	 * Adds and removes the same set of books in several threads, ensuring that
+	 * all operations successfully release their locks, even when throwing
+	 * exceptions. The main thread continously checks that the books are in a
+	 * valid state.
+	 */
+	@Test
+	public void testConcurrency3() throws BookStoreException {
+
+		// Times to check valid state of database
+		int repetitions = 1000;
+
+		HashSet<StockBook> stockBooks = new HashSet<StockBook>(2);
+		HashSet<Integer> isbns = new HashSet<Integer>(2);
+		stockBooks.add(new ImmutableStockBook(TEST_ISBN + 1,
+							  	 "The Art of Computer Programming", "Donald Knuth",
+							 		 (float) 300, 100, 0, 0, 0, false));
+		stockBooks.add(new ImmutableStockBook(TEST_ISBN + 2,
+					  			 "The C Programming Language",
+										"Dennis Ritchie and Brian Kerninghan", (float) 50,
+										100, 0, 0, 0, false));
+    isbns.add(TEST_ISBN+1);
+		isbns.add(TEST_ISBN+2);
+
+		storeManager.removeAllBooks();
+
+		Thread addThread0 =
+		    new Thread(new AddBooksProcess(storeManager, stockBooks));
+		Thread addThread1 =
+		    new Thread(new AddBooksProcess(storeManager, stockBooks));
+		Thread removeThread0 =
+		    new Thread(new RemoveBooksProcess(storeManager, isbns));
+		Thread removeThread1 =
+		    new Thread(new RemoveBooksProcess(storeManager, isbns));
+		addThread0.start();
+		addThread1.start();
+		removeThread0.start();
+		removeThread1.start();
+
+		for (int i = 0; i < repetitions; ++i) {
+			int size = storeManager.getBooks().size();
+			assertTrue(size == 0 || size == 2);
+			try {
+				size = storeManager.getBooksByISBN(isbns).size();
+				assertEquals(size, 2);
+			} catch (BookStoreException err) {
+				;
+			}
+		}
+
+		addThread0.interrupt();
+		addThread1.interrupt();
+		removeThread0.interrupt();
+		removeThread1.interrupt();
+
+	}
+
+	/**
+	 * Stress test to perform all operations manipulating both stock books and
+	 * book copies concurrently to make sure no deadlocks or unexpected exceptions
+	 * occur.
+	 */
+	@Test
+	public void testConcurrency4() throws BookStoreException {
+
+		int repetitions = 10000;
+		int threadsPerMethod = 5;
+
+		HashSet<StockBook> stockBooks = new HashSet<StockBook>(2);
+		HashSet<Integer> isbns = new HashSet<Integer>(2);
+		stockBooks.add(new ImmutableStockBook(TEST_ISBN + 1,
+							  	 "The Art of Computer Programming", "Donald Knuth",
+							 		 (float) 300, 100, 0, 0, 0, false));
+		stockBooks.add(new ImmutableStockBook(TEST_ISBN + 2,
+					  			 "The C Programming Language",
+										"Dennis Ritchie and Brian Kerninghan", (float) 50,
+										100, 0, 0, 0, false));
+    isbns.add(TEST_ISBN+1);
+		isbns.add(TEST_ISBN+2);
+
+		HashSet<BookCopy> copies = new HashSet<BookCopy>(2);
+		copies.add(new BookCopy(TEST_ISBN+1, 50));
+		copies.add(new BookCopy(TEST_ISBN+2, 50));
+
+		storeManager.removeAllBooks();
+
+		ArrayList<Thread> endlessThreads =
+		    new ArrayList<Thread>(2*threadsPerMethod);
+		ArrayList<Thread> limitedThreads =
+		    new ArrayList<Thread>(2*threadsPerMethod);
+    for (int i = 0; i < threadsPerMethod; ++i) {
+			endlessThreads.add(
+				new Thread(new AddBooksProcess(storeManager, stockBooks))
+			);
+			endlessThreads.add(
+			  new Thread(new RemoveBooksProcess(storeManager, isbns))
+			);
+			limitedThreads.add(
+				new Thread(new BuyBooksProcess(client, copies, repetitions))
+			);
+			limitedThreads.add(
+				new Thread(new AddCopiesProcess(storeManager, copies, repetitions))
+			);
+		}
+
+		for (Thread thread : endlessThreads) thread.start();
+		for (Thread thread : limitedThreads) thread.start();
+		for (Thread thread : limitedThreads) {
+			try {
+				thread.join();
+			} catch (InterruptedException err) {
+				fail();
+			}
+		}
+		for (Thread thread : endlessThreads) thread.interrupt();
 
 	}
 
