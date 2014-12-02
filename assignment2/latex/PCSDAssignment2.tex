@@ -132,6 +132,8 @@ WS(T2) \cap RS(T3) &= \{6\} \cap \{2, 3, 5, 7, 8\}\\
 &= \emptyset
 \end{align}
 \section*{Programming Task}
+
+In order to improve the locking protocol we have implemented we need a more fine grained locking protocol. Currently we are locking all books in the mapping that stores them, to improve this we have to lock individual books. When adding a new book we would also would have to construct a new lock. The locks would be stored in an array and when we wanted to interact with books, through method calls, we would acquire locks for only the books we wanted to manipulate. To avoid deadlocks we would have to sort the locks to insure we always acquired them in the same order. Sorting the locks based on the ISBN of the affected books would be an option as the ISBNs are unique. Implementing a protocol as described, would allow for concurrent manipulation of mapping of books, hence increasing the concurrency.
 \section*{Questions for Discussion on Architecture} % Question 3
 \subsection*{1.} % Question 3.1
 The implemented locking protocol is equivalent to the Strict Conservative two phase locking protocol at a method level. The implemented locking protocol acquire the lock as the first part of the method call and release the lock again when the transaction is either completed or aborted. In the implemented locking protocol, methods that write to the bookMap, will acquire an exclusive lock on on the entire book mapping and methods that only read will acquire a shared lock also on the entire book mapping, and hence atomicity of predicate reads are a non-issue as these would require a finer granularity in the locking protocol.
