@@ -134,7 +134,7 @@ WS(T2) \cap RS(T3) &= \{6\} \cap \{2, 3, 5, 7, 8\}\\
 \section*{Programming Task}
 \section*{Questions for Discussion on Architecture} % Question 3
 \subsection*{1.} % Question 3.1
-The implemented locking protocol is equivalent to the Strict Conservative two phase locking protocol at a method level. There is only one resource to be locked down, the bookStore
+The implemented locking protocol is equivalent to the Strict Conservative two phase locking protocol at a method level. The implemented locking protocol acquire as the first part of the method calls and release the lock again as the last part. There is only one resource to be locked down, the bookMap, and hence, as with Conservative two phase locking, the lock will always be acquired in the same, trivial, order by methods insuring deadlocks cannot happen between these methods.
 \subsection*{2.} % Question 3.2
 
 \subsection*{3.} % Question 3.3
