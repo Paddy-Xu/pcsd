@@ -48,13 +48,8 @@ Schedule one, reproduced above, corresponds to the precedence graph in figure~\r
 \caption{Precedence graph for Schedule one, see figure~\ref{sch1}.}
 \label{p1}
 \end{figure}
-<<<<<<< HEAD
-The precedence graph, see figure~\ref{p1}, contains a cycle between transactions: \texttt{T1,T2,T3} and is hence not conflict serializable. As schedulers using Strict two phase locking allows only conflict serializable schedules, schedule one is not conflict serializable and therefore cannot have been produced by a scheduler following Strict two phase locking.
-\subsection*{Schedule 2}
-=======
 The precedence graph, see figure~\ref{p1}, contains a cycle between transactions: \texttt{T1,T2,T3} and is hence not conflict serializable. As schedulers using Strict two phase locking allows only conflict serializable schedules. Schedule one is not conflict serializable and therefore cannot have been produced by a scheduler following Strict two phase locking.
 \subsection*{Schedule 2}
->>>>>>> Description of locks and tests.
 \begin{figure}[h!]
 \texttt{T1: R(X)\hspace{150pt}W(Y) C\\
 T2:\hspace{130pt}R(Z)\hspace{120pt}W(X) W(Y) C\\
