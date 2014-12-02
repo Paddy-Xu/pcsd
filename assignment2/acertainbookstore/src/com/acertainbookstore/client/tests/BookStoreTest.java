@@ -26,7 +26,7 @@ import com.acertainbookstore.utils.BookStoreException;
 
 /**
  * Test class to test the BookStore interface
- * 
+ *
  */
 public class BookStoreTest {
 
@@ -44,10 +44,12 @@ public class BookStoreTest {
 			localTest = (localTestProperty != null) ? Boolean
 					.parseBoolean(localTestProperty) : localTest;
 			if (localTest) {
+				System.out.println("Running test locally...");
 				CertainBookStore store = new CertainBookStore();
 				storeManager = store;
 				client = store;
 			} else {
+				System.out.println("Running test on HTTP proxies...");
 				storeManager = new StockManagerHTTPProxy(
 						"http://localhost:8081/stock");
 				client = new BookStoreHTTPProxy("http://localhost:8081");
@@ -311,6 +313,50 @@ public class BookStoreTest {
 		List<StockBook> booksInStorePostTest = storeManager.getBooks();
 		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
 				&& booksInStorePreTest.size() == booksInStorePostTest.size());
+
+	}
+
+	@Test
+	public void testConcurrency() throws BookStoreException {
+
+		// Parameters to concurrency test
+		int totalBooks = 1000;
+		int iterations = 50;
+		int booksPerIteration = totalBooks / iterations;
+
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 1,
+		               "The Art of Computer Programming", "Donald Knuth",
+									 (float) 300, totalBooks, 0, 0, 0, false));
+		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 2,
+		               "The C Programming Language",
+									 "Dennis Ritchie and Brian Kerninghan", (float) 50,
+									 totalBooks, 0, 0, 0, false));
+		storeManager.addBooks(booksToAdd);
+
+		// Add and buy same amount of books in batches determined by the number of
+		// operations. Threads will sleep for random durations to simulate "random"
+		// order of operations.
+		HashSet<BookCopy> copies = new HashSet<BookCopy>(2);
+		copies.add(new BookCopy(TEST_ISBN+1, booksPerIteration));
+		copies.add(new BookCopy(TEST_ISBN+2, booksPerIteration));
+		Thread buyBooksThread =
+		    new Thread(new BuyBooksProcess(client, copies, iterations));
+		Thread addCopiesThread =
+		    new Thread(new AddCopiesProcess(storeManager, copies, iterations));
+		buyBooksThread.run();
+		addCopiesThread.run();
+		try {
+			buyBooksThread.join();
+			addCopiesThread.join();
+		} catch (InterruptedException err) {
+			;
+		}
+
+		List<StockBook> bookList = storeManager.getBooks();
+		for (StockBook book : bookList) {
+			assertEquals(book.getNumCopies(), totalBooks);
+		}
 
 	}
 
