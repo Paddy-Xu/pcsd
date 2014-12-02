@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.acertainbookstore.business.Book;
 import com.acertainbookstore.business.BookCopy;
 import com.acertainbookstore.business.CertainBookStore;
+import com.acertainbookstore.business.ConcurrentCertainBookStore;
 import com.acertainbookstore.business.ImmutableStockBook;
 import com.acertainbookstore.business.StockBook;
 import com.acertainbookstore.client.BookStoreHTTPProxy;
@@ -45,7 +46,8 @@ public class BookStoreTest {
 					.parseBoolean(localTestProperty) : localTest;
 			if (localTest) {
 				System.out.println("Running test locally...");
-				CertainBookStore store = new CertainBookStore();
+				// CertainBookStore store = new CertainBookStore();
+				ConcurrentCertainBookStore store = new ConcurrentCertainBookStore();
 				storeManager = store;
 				client = store;
 			} else {
@@ -332,11 +334,11 @@ public class BookStoreTest {
 		               "The C Programming Language",
 									 "Dennis Ritchie and Brian Kerninghan", (float) 50,
 									 totalBooks, 0, 0, 0, false));
+    storeManager.removeAllBooks();
 		storeManager.addBooks(booksToAdd);
 
 		// Add and buy same amount of books in batches determined by the number of
-		// operations. Threads will sleep for random durations to simulate "random"
-		// order of operations.
+		// operations
 		HashSet<BookCopy> copies = new HashSet<BookCopy>(2);
 		copies.add(new BookCopy(TEST_ISBN+1, booksPerIteration));
 		copies.add(new BookCopy(TEST_ISBN+2, booksPerIteration));
@@ -344,18 +346,18 @@ public class BookStoreTest {
 		    new Thread(new BuyBooksProcess(client, copies, iterations));
 		Thread addCopiesThread =
 		    new Thread(new AddCopiesProcess(storeManager, copies, iterations));
-		buyBooksThread.run();
-		addCopiesThread.run();
+		buyBooksThread.start();
+		addCopiesThread.start();
 		try {
 			buyBooksThread.join();
 			addCopiesThread.join();
 		} catch (InterruptedException err) {
-			;
+			fail();
 		}
 
 		List<StockBook> bookList = storeManager.getBooks();
 		for (StockBook book : bookList) {
-			assertEquals(book.getNumCopies(), totalBooks);
+			assertEquals(totalBooks, book.getNumCopies());
 		}
 
 	}
