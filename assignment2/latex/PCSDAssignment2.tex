@@ -32,7 +32,7 @@ T3:\hspace{150pt}R(Z) R(Y) C}
 \caption{Schedule one.}
 \label{sch1}
 \end{figure}
-Schedule one, reproduced above, correspondence to the precedence graph in figure~\ref{p1}.
+Schedule one, reproduced above, corresponds to the precedence graph in figure~\ref{p1}.
 \begin{figure}[h!]
 \centering
 \begin{tikzpicture}
@@ -48,7 +48,7 @@ Schedule one, reproduced above, correspondence to the precedence graph in figure
 \caption{Precedence graph for Schedule one, see figure~\ref{sch1}.}
 \label{p1}
 \end{figure}
-The precedence graph, see figure~\ref{p1}, contains a cycle between transactions: \texttt{T1,T2,T3} and is hence not conflict serializable. As schedulers using Strict two phase locking allows only conflict serializable schedules. Schedule one is not conflict serializable and therefore cannot have been produced by a scheduler following Strict two phase locking.
+The precedence graph, see figure~\ref{p1}, contains a cycle between transactions: \texttt{T1,T2,T3} and is hence not conflict serializable. As schedulers using Strict two phase locking allows only conflict serializable schedules, schedule one is not conflict serializable and therefore cannot have been produced by a scheduler following Strict two phase locking.
 \subsection*{Schedule 2} 
 \begin{figure}[h!]
 \texttt{T1: R(X)\hspace{150pt}W(Y) C\\
@@ -57,7 +57,7 @@ T3:\hspace{50pt}W(Z) C}
 \caption{Schedule two.}
 \label{sch2}
 \end{figure}
-Schedule two, reproduced above, correspondence to the precedence graph in figure~\ref{p2}.
+Schedule two, reproduced above, corresponds to the precedence graph in figure~\ref{p2}.
 \begin{figure}[h!]
 \centering
 \begin{tikzpicture}
@@ -72,7 +72,7 @@ Schedule two, reproduced above, correspondence to the precedence graph in figure
 \caption{Precedence graph for Schedule one, see figure~\ref{sch2}.}
 \label{p2}
 \end{figure}
-The precedence graph, see figure~\ref{p2}, is acyclic and hence is conflict serializable. In particular schedule two, is equivalent with a serial schedule where transaction two is performed last. As schedule 2 is conflict serializable, schedule 2 could be scheduled by a scheduler following Strict two phase locking. The injection of shared and exclusive locks required if the scheduler was using Strict two phase locking is reproduced below, figure~\ref{locks}.
+The precedence graph, see figure~\ref{p2}, is acyclic and hence is conflict serializable. In particular, schedule two is equivalent with a serial schedule where transaction two is performed last. As schedule 2 is conflict serializable, schedule 2 could be scheduled by a scheduler following Strict two phase locking. The injection of shared and exclusive locks, required if the scheduler was using Strict two phase locking, is reproduced below, figure~\ref{locks}.
 \begin{figure}[h!]
 \texttt{T1: S(X)\hspace{95pt}E(Y)RS(X)RE(Y)\\
 T2:\hspace{105pt}S(Z)\hspace{90pt}E(X)E(Y)RS(Z)RE(X)RE(Y)\\
@@ -92,7 +92,7 @@ allow commit or rollback?}
 \caption{Scenario one.}
 \label{sc1}
 \end{figure}
-In scenario one, see figure~\ref{sc1}, will have to rollback because of the offending object \texttt{4} in the write set of transaction two and the read set of transaction three. The conflict occurs because transaction two completes before transactions threes begins its write phase, and the intersection of their sets are non-empty.
+In scenario one, see figure~\ref{sc1}, we will have to rollback because of the offending object \texttt{4} in the write set of transaction two and the read set of transaction three. The conflict occurs because transaction two completes before transactions threes begins its write phase, and the intersection of their sets are non-empty.
 \begin{align}
 WS(T2) \cap RS(T3) &= \{4, 5\} \cap \{3, 4, 5\}\\
 &= \{4\} \neq \emptyset
@@ -108,7 +108,7 @@ allow commit or rollback?}
 \caption{Scenario two.}
 \label{sc2}
 \end{figure}
-In scenario two, see figure~\ref{sc2}, will have to rollback of the offending object \texttt{3} in the write set of transaction one and the read set of transaction three. The conflict occurs because transaction one completes before transactions threes begins its write phase, and the intersection of their sets are non-empty.
+In scenario two, see figure~\ref{sc2}, we will have to rollback of the offending object \texttt{3} in the write set of transaction one and the read set of transaction three. The conflict occurs because transaction one completes before transaction three begins its write phase, and the intersection of their sets are non-empty.
 \begin{align}
 WS(T1) \cap RS(T3) &= \{3\} \cap \{3, 4, 5, 6, 7\}\\
 &= \{3\} \neq \emptyset
