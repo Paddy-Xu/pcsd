@@ -319,7 +319,7 @@ public class BookStoreTest {
 	}
 
 	@Test
-	public void testConcurrency() throws BookStoreException {
+	public void testConcurrency1() throws BookStoreException {
 
 		// Parameters to concurrency test
 		int totalBooks = 1000;
@@ -359,6 +359,46 @@ public class BookStoreTest {
 		for (StockBook book : bookList) {
 			assertEquals(totalBooks, book.getNumCopies());
 		}
+
+	}
+
+	@Test
+	public void testConcurrency2() throws BookStoreException {
+
+		// Number of iterations before accepting
+		int repetitions = 1000;
+
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 1,
+									 "The Art of Computer Programming", "Donald Knuth",
+									 (float) 300, 100, 0, 0, 0, false));
+		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 2,
+									 "The C Programming Language",
+									 "Dennis Ritchie and Brian Kerninghan", (float) 50,
+		               100, 0, 0, 0, false));
+		storeManager.removeAllBooks();
+		storeManager.addBooks(booksToAdd);
+
+		HashSet<BookCopy> copies = new HashSet<BookCopy>(2);
+		copies.add(new BookCopy(TEST_ISBN+1, 50));
+		copies.add(new BookCopy(TEST_ISBN+2, 50));
+
+		// The modifying thread continously buys/adds books until stopped
+		Thread modifyThread =
+		    new Thread(new ModifyProcess(client, storeManager, copies));
+    modifyThread.start();
+
+		// This thread acts as the one verifying results, no reason to spawn a new
+		// one
+		for (int i = 0; i < repetitions; ++i) {
+			List<StockBook> bookList = storeManager.getBooks();
+			for (StockBook book : bookList) {
+				int numCopies = book.getNumCopies();
+				assertTrue(numCopies == 50 || numCopies == 100);
+			}
+		}
+
+		modifyThread.interrupt();
 
 	}
 
