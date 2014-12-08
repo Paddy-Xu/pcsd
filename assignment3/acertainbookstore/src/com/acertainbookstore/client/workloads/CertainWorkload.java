@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.acertainbookstore.client.workloads;
 
@@ -18,13 +18,15 @@ import com.acertainbookstore.utils.BookStoreConstants;
 import com.acertainbookstore.utils.BookStoreException;
 
 /**
- * 
+ *
  * CertainWorkload class runs the workloads by different workers concurrently.
  * It configures the environment for the workers using WorkloadConfiguration
  * objects and reports the metrics
- * 
+ *
  */
 public class CertainWorkload {
+
+	public static final int INITIAL_BOOKS_IN_STORE = 50;
 
 	/**
 	 * @param args
@@ -34,7 +36,8 @@ public class CertainWorkload {
 		String serverAddress = "http://localhost:8081";
 		boolean localTest = true;
 		List<WorkerRunResult> workerRunResults = new ArrayList<WorkerRunResult>();
-		List<Future<WorkerRunResult>> runResults = new ArrayList<Future<WorkerRunResult>>();
+		List<Future<WorkerRunResult>> runResults =
+		    new ArrayList<Future<WorkerRunResult>>();
 
 		// Initialize the RPC interfaces if its not a localTest, the variable is
 		// overriden if the property is set
@@ -87,7 +90,7 @@ public class CertainWorkload {
 
 	/**
 	 * Computes the metrics and prints them
-	 * 
+	 *
 	 * @param workerRunResults
 	 */
 	public static void reportMetric(List<WorkerRunResult> workerRunResults) {
@@ -96,14 +99,20 @@ public class CertainWorkload {
 
 	/**
 	 * Generate the data in bookstore before the workload interactions are run
-	 * 
+	 *
 	 * Ignores the serverAddress if its a localTest
-	 * 
+	 *
 	 */
 	public static void initializeBookStoreData(BookStore bookStore,
 			StockManager stockManager) throws BookStoreException {
 
-		// TODO: You should initialize data for your bookstore here
+		// The BookSetGenerator should really be instantiated for the entire test,
+		// but since these methods are static this cannot be done without adding
+		// mutable static members or changing the signature of this function
+		BookSetGenerator generator = new BookSetGenerator();
+		stockManager.addBooks(
+		  generator.nextSetOfStockBooks(INITIAL_BOOKS_IN_STORE)
+		);
 
 	}
 }

@@ -16,11 +16,17 @@ import com.acertainbookstore.utils.BookStoreException;
  */
 public class BookSetGenerator {
 
-	private Integer isbnCounter = 1;
-	private final Random rng = new Random();
+  private final Random rng;
+	private Integer isbnCounter;
 
 	public BookSetGenerator() {
-		// TODO Auto-generated constructor stub
+		rng = new Random();
+		isbnCounter = rng.nextInt();
+	}
+
+	public BookSetGenerator(int startIsbn) {
+		rng = new Random();
+		isbnCounter = startIsbn;
 	}
 
 	/**
@@ -54,8 +60,8 @@ public class BookSetGenerator {
 	 * Generated random ImmutableStockBook instances. A given instantiation of
 	 * this class is guaranteed to never return a book with the same ISBN as a
 	 * previously generated one, limited to Integer.MAX_INT number of books, at
-	 * which point the numbers will start again from 1. 10% of the returned books
-	 * will be editor picks. 20% will have sales misses.
+	 * which point numbers will start to reappear. 10% of the returned books will
+	 * be editor picks. 20% will have sales misses.
 	 *
 	 * @param num Number of random stock books to generate.
 	 * @return Set of randomly generated ImmutableStockBook instances.
