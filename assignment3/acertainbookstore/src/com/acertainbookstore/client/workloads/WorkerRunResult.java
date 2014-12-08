@@ -1,14 +1,12 @@
 package com.acertainbookstore.client.workloads;
 
 /**
- * 
  * WorkerRunResult class represents the result returned by a worker class after
  * running the workload interactions
- * 
  */
 public class WorkerRunResult {
 	private int successfulInteractions; // total number of successful interactions
-	private int totalRuns; // total number of interactions run 
+	private int totalRuns; // total number of interactions run
 	private long elapsedTimeInNanoSecs; // total time taken to run all
 										// interactions
 	private int successfulFrequentBookStoreInteractionRuns; // number of
@@ -26,8 +24,10 @@ public class WorkerRunResult {
 		this.setSuccessfulInteractions(successfulInteractions);
 		this.setElapsedTimeInNanoSecs(elapsedTimeInNanoSecs);
 		this.setTotalRuns(totalRuns);
-		this.setSuccessfulFrequentBookStoreInteractionRuns(successfulFrequentBookStoreInteractionRuns);
-		this.setTotalFrequentBookStoreInteractionRuns(totalFrequentBookStoreInteractionRuns);
+		this.setSuccessfulFrequentBookStoreInteractionRuns(
+		    successfulFrequentBookStoreInteractionRuns);
+		this.setTotalFrequentBookStoreInteractionRuns(
+		    totalFrequentBookStoreInteractionRuns);
 	}
 
 	public int getTotalRuns() {
@@ -60,7 +60,8 @@ public class WorkerRunResult {
 
 	public void setSuccessfulFrequentBookStoreInteractionRuns(
 			int successfulFrequentBookStoreInteractionRuns) {
-		this.successfulFrequentBookStoreInteractionRuns = successfulFrequentBookStoreInteractionRuns;
+		this.successfulFrequentBookStoreInteractionRuns =
+		    successfulFrequentBookStoreInteractionRuns;
 	}
 
 	public int getTotalFrequentBookStoreInteractionRuns() {
@@ -69,7 +70,8 @@ public class WorkerRunResult {
 
 	public void setTotalFrequentBookStoreInteractionRuns(
 			int totalFrequentBookStoreInteractionRuns) {
-		this.totalFrequentBookStoreInteractionRuns = totalFrequentBookStoreInteractionRuns;
+		this.totalFrequentBookStoreInteractionRuns =
+		    totalFrequentBookStoreInteractionRuns;
 	}
 
 }

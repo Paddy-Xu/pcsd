@@ -94,7 +94,24 @@ public class CertainWorkload {
 	 * @param workerRunResults
 	 */
 	public static void reportMetric(List<WorkerRunResult> workerRunResults) {
-		// TODO: You should aggregate metrics and output them for plotting here
+		int runs = 0, successful = 0, frequentRuns = 0, frequentSuccessful = 0;
+		long elapsedTime = 0;
+		double latency = 0;
+		for (WorkerRunResult result : workerRunResults) {
+			runs += result.getTotalRuns();
+			successful += result.getSuccessfulInteractions();
+			frequentRuns += result.getTotalFrequentBookStoreInteractionRuns();
+			frequentSuccessful +=
+			    result.getSuccessfulFrequentBookStoreInteractionRuns();
+      elapsedTime += result.getElapsedTimeInNanoSecs();
+			latency += (double)result.getSuccessfulInteractions() /
+			           ((double)result.getElapsedTimeInNanoSecs()*1.e-9);
+		}
+		assert((float)successful / (float)runs > 0.99);
+		assert(Math.abs((float)frequentSuccessful / (float)successful - .6) < .05);
+		double throughput = (double)successful / ((double)elapsedTime * 1.e-9);
+		latency /= (double)workerRunResults.size();
+		System.out.println("Throughput: " + throughput + "\nLatency: " + latency);
 	}
 
 	/**

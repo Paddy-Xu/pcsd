@@ -21,7 +21,7 @@ public class BookSetGenerator {
 
 	public BookSetGenerator() {
 		rng = new Random();
-		isbnCounter = rng.nextInt(1 + Integer.MAX_VALUE);
+		isbnCounter = 1 + rng.nextInt(Integer.MAX_VALUE);
 	}
 
 	public BookSetGenerator(int startIsbn) {
@@ -67,7 +67,7 @@ public class BookSetGenerator {
 	}
 
 	/**
-	 * Generated random ImmutableStockBook instances. A given instantiation of
+	 * Generates random ImmutableStockBook instances. A given instantiation of
 	 * this class is guaranteed to never return a book with the same ISBN as a
 	 * previously generated one, limited to Integer.MAX_INT number of books, at
 	 * which point numbers will start to reappear. 10% of the returned books will
@@ -76,7 +76,8 @@ public class BookSetGenerator {
 	 * @param num Number of random stock books to generate.
 	 * @return Set of randomly generated ImmutableStockBook instances.
 	 */
-	public Set<StockBook> nextSetOfStockBooks(int num) throws BookStoreException {
+	public Set<StockBook> nextSetOfStockBooks(int num)
+      throws BookStoreException {
 
 		if (num < 1) throw new BookStoreException("Invalid parameters received");
 		if (isbnCounter > Integer.MAX_VALUE - num) isbnCounter = 1;
