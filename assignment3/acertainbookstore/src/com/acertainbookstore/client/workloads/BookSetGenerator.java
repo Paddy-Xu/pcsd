@@ -21,13 +21,23 @@ public class BookSetGenerator {
 
 	public BookSetGenerator() {
 		rng = new Random();
-		isbnCounter = rng.nextInt();
+		isbnCounter = rng.nextInt(1 + Integer.MAX_VALUE);
 	}
 
 	public BookSetGenerator(int startIsbn) {
 		rng = new Random();
 		isbnCounter = startIsbn;
 	}
+
+  /** Stolen from http://stackoverflow.com/a/2546186/2949968 */
+  private long nextLong(long n) {
+     long bits, val;
+     do {
+        bits = (rng.nextLong() << 1) >>> 1;
+        val = bits % n;
+     } while (bits-val+(n-1) < 0L);
+     return val;
+  }
 
 	/**
 	 * @param isbns Input set of ISBNs to sample from.
@@ -71,7 +81,7 @@ public class BookSetGenerator {
 		if (num < 1) throw new BookStoreException("Invalid parameters received");
 		if (isbnCounter > Integer.MAX_VALUE - num) isbnCounter = 1;
 
-		long timesRated = rng.nextLong() % 1000;
+		long timesRated = nextLong(1001);
 		HashSet<StockBook> samples = new HashSet<StockBook>(num);
 		for (int i = 0; i < num; ++i) {
 			samples.add(new ImmutableStockBook(
@@ -79,8 +89,8 @@ public class BookSetGenerator {
 				"Mastering C++ Vol. " + isbnCounter++,        // Title
 				"Scott Meyers",                               // Author
 				100 + 900*rng.nextFloat(),                    // Price
-				100*(1 + rng.nextInt() % 10),                 // Number of copies
-				rng.nextInt(6) > 4 ? rng.nextInt(20) : 0,	  	// Sales misses
+				100*(1 + rng.nextInt(10)),                    // Number of copies
+				rng.nextInt(6) > 4 ? rng.nextInt(20) : 0,	    // Sales misses
 				timesRated,                                   // Number of ratings
 				(long)(5.*(float)timesRated*rng.nextFloat()), // Average rating
 				rng.nextInt(11) > 9                           // Is an editor pick

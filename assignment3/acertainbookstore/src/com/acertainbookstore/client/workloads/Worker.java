@@ -3,11 +3,15 @@
  */
 package com.acertainbookstore.client.workloads;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
+import com.acertainbookstore.business.BookCopy;
 import com.acertainbookstore.business.StockBook;
 import com.acertainbookstore.utils.BookStoreException;
 
@@ -119,7 +123,19 @@ public class Worker implements Callable<WorkerRunResult> {
 	 * @throws BookStoreException
 	 */
 	private void runFrequentStockManagerInteraction() throws BookStoreException {
-		// TODO: Add code for Stock Replenishment Interaction
+		List<StockBook> allBooks = configuration.getStockManager().getBooks();
+		TreeMap<Long, StockBook> lowestStock = new TreeMap<Long, StockBook>();
+		for (StockBook book : allBooks) {
+			lowestStock.put(book.getTotalRating(), book);
+		}
+		int numCopies = configuration.getNumAddCopies();
+		HashSet<BookCopy> copiesToAdd = new HashSet<BookCopy>(numCopies);
+		Iterator<StockBook> lowestIterator = lowestStock.values().iterator();
+		for (int i = 0; i < numCopies; ++i) {
+			copiesToAdd.add(new BookCopy(lowestIterator.next().getISBN(),
+			                             numCopies));
+		}
+		configuration.getStockManager().addCopies(copiesToAdd);
 	}
 
 	/**

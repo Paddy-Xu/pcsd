@@ -5,4 +5,4 @@ do
   LIB_FILES=$LIB_FILES:$f
 done
 
-javac `find . -name "*.java"` -cp $LIB_FILES
+javac `find . -name "*.java"` -Xlint:unchecked -cp $LIB_FILES
