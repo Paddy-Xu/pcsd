@@ -4,7 +4,7 @@ package com.acertainbookstore.business;
  * The book object that gets sent back to the StockManager. We do not allow the
  * StockManager to make any changes to the data structure. The member functions
  * are commented in the StockBook interface instead of here.
- * 
+ *
  */
 public final class ImmutableStockBook extends ImmutableBook implements
 		StockBook {
@@ -17,8 +17,8 @@ public final class ImmutableStockBook extends ImmutableBook implements
 
 	/**
 	 * Creates an immutable StockBook.
-	 * 
-	 * @param ISBN
+	 *
+	 * @param isbn
 	 * @param title
 	 * @param author
 	 * @param price
@@ -28,14 +28,14 @@ public final class ImmutableStockBook extends ImmutableBook implements
 	 * @param TotalRating
 	 * @param editorPick
 	 */
-	public ImmutableStockBook(int ISBN, String title, String author,
-			float price, int numCopies, long SaleMisses, long timesRated,
+	public ImmutableStockBook(int isbn, String title, String author,
+			float price, int numCopies, long saleMisses, long timesRated,
 			long totalRating, boolean editorPick) {
-		super(ISBN, title, author, price);
+		super(isbn, title, author, price);
 		this.totalRating = totalRating;
 		this.timesRated = timesRated;
 		this.numCopies = numCopies;
-		this.saleMisses = SaleMisses;
+		this.saleMisses = saleMisses;
 		this.editorPick = editorPick;
 	}
 
