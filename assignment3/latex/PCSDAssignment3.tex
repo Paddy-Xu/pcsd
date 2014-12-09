@@ -29,6 +29,7 @@ The difference between non-volatile and stable storage, is that stable storage c
 \subsection*{3.}
 The two situations that will require the log tail to be forced to stable storage, are before a data page is written to non-volatile storage and when a transaction commits. The log tail must be forced to stable storage before a data page is written to ensure recoverability in case of a subsequent crash where the data page is lost. The log tail must furthermore be forced to stable storage when a transaction is committed to ensure the changes of a committed transaction can survive crashes. As volatile storage will not be recoverable from a crash, a record of the state of the system that the non-volatile storage represents after a crash is necessary. Hence to ensure the durability of the system, it is sufficient to maintain a record of state represented by the storage that will survive a crash, i.e. non-volatile storage.
 \section*{ARIES}
+\begin{table}[h!]
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
 \texttt{LOG}&&&& \\ 
 &&&&\\ 
@@ -43,14 +44,46 @@ The two situations that will require the log tail to be forced to stable storage
 \texttt{8} & \texttt{5} & \texttt{T2} & \texttt{update} & \texttt{P5} \\
 \texttt{9} & \texttt{8} & \texttt{T2} & \texttt{update} & \texttt{P3} \\
 \texttt{10} & \texttt{6} & \texttt{T3} & \texttt{END} & \texttt{-} \\ 
-\end{tabular*} 
-\section*{Programming Task}
+\end{tabular*}
+\caption{The log of transaction before a crash.}
+\label{log}
+\end{table} 
 \subsection*{1.}
+\begin{table}[h!]
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
+\texttt{Transaction table}&&&& \\ 
+&&&&\\ 
+\texttt{TRAN\_ID} & \texttt{Status} & \texttt{lastLSN} \\
+\texttt{T1} & \texttt{progress} & \texttt{4} \\ 
+\texttt{T2} & \texttt{progress} & \texttt{9} \\ 
+\texttt{T3} & \texttt{committed} & \texttt{10} \\ 
+\end{tabular*}
+\caption{The transaction table after the crash, based on the log, see table~\ref{log}.}
+\label{trans}
+\end{table}
+\begin{table}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
+\texttt{Dirty page table}&&&& \\ 
+&&&&\\ 
+\texttt{Page\_ID} & \texttt{recLSN} \\
+\texttt{P1} & \texttt{4}\\ 
+\texttt{P2} & \texttt{3}\\ 
+\texttt{P3} & \texttt{6}\\ 
+\texttt{P5} & \texttt{5}\\
+\end{tabular*}
+\caption{The dirty page table after the crash, based on the log, see table~\ref{log}.}
+\label{dirty}
+\end{table}
+The transaction table, see table~\ref{trans}, is based on the log, see table~\ref{log}. Transaction three has committed, whilst transaction one and two are still in progress, when the crash occurs.\\
+The dirty page table, see table~\ref{dirty}, is based on the log, see table~\ref{log}. The \texttt{recLSN} field represents the first log sequence number identifying a update dirtying a particular page. Pages one, two three and five was written to after the last checkpoint where the dirty page table was flushed.
 \subsection*{2.}
+The set of winner transaction are transactions that have committed and ended before the crash occurs, whilst the loser set represents the transactions that are still in progress. Hence the winner set for the log, see table~\ref{log}, is \{\texttt{T3}\} and the losers set is \{\texttt{T1}, \texttt{T2}\}.
 \subsection*{3.}
+
 \subsection*{4.}
 \subsection*{5.}
 \subsection*{6.}
+\section*{Programming Task}
 \section*{Discussion on the Performance Measurements}
 \subsection*{1.}
 \subsection*{2.}
