@@ -33,44 +33,44 @@ The difference between non-volatile and stable storage, is that stable storage c
 The two situations that will require the log tail to be forced to stable storage, are before a data page is written to non-volatile storage and when a transaction commits. The log tail must be forced to stable storage before a data page is written to ensure recoverability in case of a subsequent crash where the data page is lost. The log tail must furthermore be forced to stable storage when a transaction is committed to ensure the changes of a committed transaction can survive crashes. As volatile storage will not be recoverable from a crash, a record of the state of the system that the non-volatile storage represents after a crash is necessary. Hence to ensure the durability of the system, it is sufficient to maintain a record of state represented by the storage that will survive a crash, i.e. non-volatile storage.
 \section*{ARIES}
 \begin{table}[h!]
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
-\texttt{LOG}&&&& \\ 
-&&&&\\ 
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll}
+\texttt{LOG}&&&& \\
+&&&&\\
 \texttt{LSN} & \texttt{LAST\_LSN} & \texttt{TRAN\_ID} & \texttt{TYPE} & \texttt{PAGE\_ID} \\
-\texttt{1} & \texttt{-} & \texttt{-} & \texttt{begin CKPT} & \texttt{-} \\ 
-\texttt{2} & \texttt{-} & \texttt{-} & \texttt{end CKPT} & \texttt{-} \\ 
-\texttt{3} & \texttt{NULL} & \texttt{T1} & \texttt{update} & \texttt{P2} \\ 
-\texttt{4} & \texttt{3} &\texttt{T1} & \texttt{update} & \texttt{P1} \\ 
-\texttt{5} & \texttt{NULL} & \texttt{T2} & \texttt{update} & \texttt{P5} \\ 
-\texttt{6} & \texttt{NULL} & \texttt{T3} & \texttt{update} & \texttt{P3} \\ 
-\texttt{7} & \texttt{6} & \texttt{T3} & \texttt{commit} & \texttt{-} \\ 
+\texttt{1} & \texttt{-} & \texttt{-} & \texttt{begin CKPT} & \texttt{-} \\
+\texttt{2} & \texttt{-} & \texttt{-} & \texttt{end CKPT} & \texttt{-} \\
+\texttt{3} & \texttt{NULL} & \texttt{T1} & \texttt{update} & \texttt{P2} \\
+\texttt{4} & \texttt{3} &\texttt{T1} & \texttt{update} & \texttt{P1} \\
+\texttt{5} & \texttt{NULL} & \texttt{T2} & \texttt{update} & \texttt{P5} \\
+\texttt{6} & \texttt{NULL} & \texttt{T3} & \texttt{update} & \texttt{P3} \\
+\texttt{7} & \texttt{6} & \texttt{T3} & \texttt{commit} & \texttt{-} \\
 \texttt{8} & \texttt{5} & \texttt{T2} & \texttt{update} & \texttt{P5} \\
 \texttt{9} & \texttt{8} & \texttt{T2} & \texttt{update} & \texttt{P3} \\
-\texttt{10} & \texttt{6} & \texttt{T3} & \texttt{END} & \texttt{-} \\ 
+\texttt{10} & \texttt{6} & \texttt{T3} & \texttt{END} & \texttt{-} \\
 \end{tabular*}
 \caption{The log records before a crash.}
 \label{log}
-\end{table} 
+\end{table}
 \subsection*{1.}
 \begin{table}[h!]
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
-\texttt{Transaction table}&&&& \\ 
-&&&&\\ 
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll}
+\texttt{Transaction table}&&&& \\
+&&&&\\
 \texttt{TRAN\_ID} & \texttt{Status} & \texttt{last\_LSN} \\
-\texttt{T1} & \texttt{progress} & \texttt{4} \\ 
-\texttt{T2} & \texttt{progress} & \texttt{9} \\ 
+\texttt{T1} & \texttt{progress} & \texttt{4} \\
+\texttt{T2} & \texttt{progress} & \texttt{9} \\
 \end{tabular*}
 \caption{The transaction table after the crash, based on the log, see table~\ref{log}.}
 \label{trans}
 \end{table}
 \begin{table}
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
-\texttt{Dirty page table}&&&& \\ 
-&&&&\\ 
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll}
+\texttt{Dirty page table}&&&& \\
+&&&&\\
 \texttt{Page\_ID} & \texttt{recLSN} \\
-\texttt{P1} & \texttt{4}\\ 
-\texttt{P2} & \texttt{3}\\ 
-\texttt{P3} & \texttt{6}\\ 
+\texttt{P1} & \texttt{4}\\
+\texttt{P2} & \texttt{3}\\
+\texttt{P3} & \texttt{6}\\
 \texttt{P5} & \texttt{5}\\
 \end{tabular*}
 \caption{The dirty page table after the crash, based on the log, see table~\ref{log}.}
@@ -83,41 +83,50 @@ The set of winner transaction are transactions that have committed and ended bef
 \subsection*{3.}
 The redo phase will begin at LSN three as this is the lowest LSN recorded in the dirty page table. The undo phase will ended at LSN three, the highest LSN will be picked and after the modification it identifies is undone its \texttt{LAST\_LSN} will be added until all transaction recorded in the Transaction table have \texttt{NULL} recorded in their \texttt{LAST\_LSN} field.
 \subsection*{4.}
-The set of LSNs that identify log records may need to be rewritten are \{3, 4, 8, 9\}. Log record three may need to be rewritten as it is on the dirty page table, see table~\ref{dirty}, its LSN is equal to the recorded recLSN on the dirty table. Lastly we are using ARIES and transaction one has not been committed. Log records three, four, eight and nine are in the set by a similar argument. 
+The set of LSNs that identify log records may need to be rewritten are \{3, 4, 8, 9\}. Log record three may need to be rewritten as it is on the dirty page table, see table~\ref{dirty}, its LSN is equal to the recorded recLSN on the dirty table. Lastly we are using ARIES and transaction one has not been committed. Log records three, four, eight and nine are in the set by a similar argument.
 \subsection*{5.}
 The set of LSNs that identify log records that must be undone during the undo phase is \{9, 8, 5,4,3\}. These are the modification done by the loser transactions before the last checkpoint.
 \subsection*{6.}
 \begin{table}[h!]
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
-\texttt{LOG}&&&& \\ 
-&&&&\\ 
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll}
+\texttt{LOG}&&&& \\
+&&&&\\
 \texttt{LSN} & \texttt{LAST\_LSN} & \texttt{TRAN\_ID} & \texttt{TYPE} & \texttt{PAGE\_ID} \\
-\texttt{1} & \texttt{-} & \texttt{-} & \texttt{begin CKPT} & \texttt{-} \\ 
-\texttt{2} & \texttt{-} & \texttt{-} & \texttt{end CKPT} & \texttt{-} \\ 
-\texttt{3} & \texttt{NULL} & \texttt{T1} & \texttt{update} & \texttt{P2} \\ 
-\texttt{4} & \texttt{3} &\texttt{T1} & \texttt{update} & \texttt{P1} \\ 
-\texttt{5} & \texttt{NULL} & \texttt{T2} & \texttt{update} & \texttt{P5} \\ 
-\texttt{6} & \texttt{NULL} & \texttt{T3} & \texttt{update} & \texttt{P3} \\ 
-\texttt{7} & \texttt{6} & \texttt{T3} & \texttt{commit} & \texttt{-} \\ 
+\texttt{1} & \texttt{-} & \texttt{-} & \texttt{begin CKPT} & \texttt{-} \\
+\texttt{2} & \texttt{-} & \texttt{-} & \texttt{end CKPT} & \texttt{-} \\
+\texttt{3} & \texttt{NULL} & \texttt{T1} & \texttt{update} & \texttt{P2} \\
+\texttt{4} & \texttt{3} &\texttt{T1} & \texttt{update} & \texttt{P1} \\
+\texttt{5} & \texttt{NULL} & \texttt{T2} & \texttt{update} & \texttt{P5} \\
+\texttt{6} & \texttt{NULL} & \texttt{T3} & \texttt{update} & \texttt{P3} \\
+\texttt{7} & \texttt{6} & \texttt{T3} & \texttt{commit} & \texttt{-} \\
 \texttt{8} & \texttt{5} & \texttt{T2} & \texttt{update} & \texttt{P5} \\
 \texttt{9} & \texttt{8} & \texttt{T2} & \texttt{update} & \texttt{P3} \\
-\texttt{10} & \texttt{6} & \texttt{T3} & \texttt{END} & \texttt{-} \\ 
+\texttt{10} & \texttt{6} & \texttt{T3} & \texttt{END} & \texttt{-} \\
 \multicolumn{5}{c}{\texttt{CRASH, RESTART}}\\
-\texttt{11} & \texttt{-} & \texttt{T2} & \texttt{CLR;undo LSN 9} & \texttt{P3} \\ 
-\texttt{12} & \texttt{-} & \texttt{T2} & \texttt{CLR;undo LSN 8} & \texttt{P5} \\ 
-\texttt{13} & \texttt{-} & \texttt{T2} & \texttt{CLR;undo LSN 5} & \texttt{P5} \\ 
-\texttt{14} & \texttt{13} &\texttt{T2} & \texttt{END} & \texttt{-} \\ 
-\texttt{15} & \texttt{-} & \texttt{T1} & \texttt{CLR;undo LSN 4} & \texttt{P1} \\ 
-\texttt{16} & \texttt{-} & \texttt{T1} & \texttt{CLR;undo LSN 3} & \texttt{P2} \\ 
-\texttt{17} & \texttt{16} & \texttt{T1} & \texttt{END} & \texttt{-} \\ 
+\texttt{11} & \texttt{-} & \texttt{T2} & \texttt{CLR;undo LSN 9} & \texttt{P3} \\
+\texttt{12} & \texttt{-} & \texttt{T2} & \texttt{CLR;undo LSN 8} & \texttt{P5} \\
+\texttt{13} & \texttt{-} & \texttt{T2} & \texttt{CLR;undo LSN 5} & \texttt{P5} \\
+\texttt{14} & \texttt{13} &\texttt{T2} & \texttt{END} & \texttt{-} \\
+\texttt{15} & \texttt{-} & \texttt{T1} & \texttt{CLR;undo LSN 4} & \texttt{P1} \\
+\texttt{16} & \texttt{-} & \texttt{T1} & \texttt{CLR;undo LSN 3} & \texttt{P2} \\
+\texttt{17} & \texttt{16} & \texttt{T1} & \texttt{END} & \texttt{-} \\
 \end{tabular*}
 \caption{The log records until restart.}
 \label{crs}
-\end{table} 
+\end{table}
 The table~\ref{crs} represents the log after recovery has been completed. Neither the analysis nor redo phase will write anything to the log. The redo phase could write end type record if there were any committed transactions that had not been ended, however, this is not the case. The undo phase will iterate over all loser transactions undoing the highest current LSN until the \texttt{LAST\_LSN} is \texttt{NULL} by which the transaction will be ended.
 \section*{Programming Task}
 \section*{Discussion on the Performance Measurements}
 \subsection*{1.}
+
+The bookstore is initialized with 50 books. These are generated by \verb|nextSetOfStockBooks| in \verb|BookSetGenerator|, which assigns them unique ISBNs by starting at a random integer and assigns a sequence from there. The remaining parameters are generated randomly in various uniform intervals. A certain percentage will have sales misses and different percentage will be editor picks.
+\\
+\\
+The main method of \verb|CertainWorkload| takes an input parameter from the command line specifying how many workers will be used. A python script then sweeps over amount of workers from 1-10, running each configuration 10 times and taking the average. This was done because a very large variance was observed during benchmark runs. The configuration uses only 5 warmup runs and 20 actual runs, as the RPC implementation otherwise wouldn't finish in reasonable time.
+\\
+\\
+For the plots, the normalized throughput and latency is used, as the local address implementation was around two orders of magnitude faster than the RPC implementation, and they otherwise wouldn't fit into the same plot.
+
 \subsection*{2.}
 
 \begin{figure}[htbp]
