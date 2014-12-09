@@ -145,17 +145,22 @@ public class Worker implements Callable<WorkerRunResult> {
 	 * @throws BookStoreException
 	 */
 	private void runFrequentBookStoreInteraction() throws BookStoreException {
-		List<Book> editorPicks = configuration.getBookStore().getEditorPicks(configuration.getNumEditorPicksToGet());
-		Set<Integer> editorISBNs = new HashSet<Integer>(configuration.getNumEditorPicksToGet());
+		List<Book> editorPicks = configuration.getBookStore().getEditorPicks(
+		    configuration.getNumEditorPicksToGet());
+		HashSet<Integer> editorISBNs =
+		    new HashSet<Integer>(configuration.getNumEditorPicksToGet());
 		for (Book book : editorPicks) {
 			editorISBNs.add(book.getISBN());
 		}
-		Set<Integer> sampleISBNs = generator.sampleFromSetOfISBNs(editorISBNs, configuration.getNumBooksToBuy());
-		Set<BookCopy> booksToBuy = new HashSet<BookCopy>(sampleISBNs.size());
+		Set<Integer> sampleISBNs =
+		    generator.sampleFromSetOfISBNs(editorISBNs,
+				                               configuration.getNumBooksToBuy());
+		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>(sampleISBNs.size());
 		for (Book book : editorPicks) {
 			int isbn = book.getISBN();
 			if (sampleISBNs.contains(isbn)) {
-				booksToBuy.add(new BookCopy(isbn, configuration.getNumBookCopiesToBuy()));
+				booksToBuy.add(
+				    new BookCopy(isbn, configuration.getNumBookCopiesToBuy()));
 			}
 		}
 		configuration.getBookStore().buyBooks(booksToBuy);

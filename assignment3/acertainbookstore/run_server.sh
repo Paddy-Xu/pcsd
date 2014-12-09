@@ -4,4 +4,4 @@ for f in `find . -name "*.jar"`
 do
   LIB_FILES=$LIB_FILES:$f
 done
-java -cp $LIB_FILES com.acertainbookstore.client.workloads.CertainWorkload $1
+java -cp $LIB_FILES com.acertainbookstore.server.BookStoreHTTPServer

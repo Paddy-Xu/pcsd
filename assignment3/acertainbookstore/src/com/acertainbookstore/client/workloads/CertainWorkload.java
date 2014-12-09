@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.acertainbookstore.business.CertainBookStore;
 import com.acertainbookstore.business.ConcurrentCertainBookStore;
 import com.acertainbookstore.client.BookStoreHTTPProxy;
 import com.acertainbookstore.client.StockManagerHTTPProxy;
@@ -32,9 +33,16 @@ public class CertainWorkload {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		int numConcurrentWorkloadThreads = 10;
+		int numConcurrentWorkloadThreads;
+		if (args.length > 0) {
+			numConcurrentWorkloadThreads = Integer.parseInt(args[0]);
+		} else {
+			numConcurrentWorkloadThreads = 10;
+		}
+		System.out.println("Running benchmark with " + numConcurrentWorkloadThreads
+		                   + " worker threads.");
 		String serverAddress = "http://localhost:8081";
-		boolean localTest = true;
+		boolean localTest = false;
 		List<WorkerRunResult> workerRunResults = new ArrayList<WorkerRunResult>();
 		List<Future<WorkerRunResult>> runResults =
 		    new ArrayList<Future<WorkerRunResult>>();
