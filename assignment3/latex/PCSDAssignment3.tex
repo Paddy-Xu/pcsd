@@ -27,7 +27,7 @@ If a system implements force and no-stealing, the system will not have to implem
 \subsection*{2.}
 The difference between non-volatile and stable storage, is that stable storage can recover from media failure by implementing redundancy. Both kind of storage can recover from crashes. The final kind of storage, volatile storage, cannot recover from neither media failure nor crashes.
 \subsection*{3.}
-
+The two situations that will require the log tail to be forced to stable storage, are before a data page is written to non-volatile storage and when a transaction commits. The log tail must be forced to stable storage before a data page is written to ensure recoverability in case of a subsequent crash where the data page is lost. The log tail must furthermore be forced to stable storage when a transaction is committed to ensure the changes of a committed transaction can survive crashes. As volatile storage will not be recoverable from a crash, a record of the state of the system that the non-volatile storage represents after a crash is necessary. Hence to ensure the durability of the system, it is sufficient to maintain a record of state represented by the storage that will survive a crash, i.e. non-volatile storage.
 \section*{ARIES}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
 \texttt{LOG}&&&& \\ 
