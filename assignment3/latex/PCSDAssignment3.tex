@@ -82,7 +82,9 @@ The redo phase will begin at LSN three as this is the lowest LSN recorded in the
 \subsection*{4.}
 The set of LSNs that identify log records may need to be rewritten are \{3, 4, 8, 9\}. Log record three may need to be rewritten as it is on the dirty page table, see table~\ref{dirty}, its LSN is equal to the recorded recLSN on the dirty table. Lastly we are using ARIES and transaction one has not been committed. Log records three, four, eight and nine are in the set by a similar argument. 
 \subsection*{5.}
+The set of LSNs that identify log records that must be undone during the undo phase is \{9, 8, 5,4,3\}. These are the modification done by the loser transactions before the last checkpoint.
 \subsection*{6.}
+
 \section*{Programming Task}
 \section*{Discussion on the Performance Measurements}
 \subsection*{1.}
