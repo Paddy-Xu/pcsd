@@ -145,10 +145,10 @@ We see that we have maximum throughput at 4-7 threads. The increase prior to thi
 Now the tests done over RPC (blue lines):
 \\
 \\
-(bla bla something about latency)
-\\
-\\
 For the throughput, we see the same behaviour as before, only that the peak comes a lot earlier (at 2 threads) and the decline is a lot faster. The added hardware factor in this case is the network connection. We suspect that the early peak comes from the fact that all the threads need to share a single network connection, which now becomes the bottle-neck. As we can see, 2 threads are still better than 1, presumably because the machine can hide some other latency than network I/O, because a single thread cannot utilise the network connection to its fullest. At more than 3 threads, the network bottle-neck becomes apparent.
+\\
+\\
+For the latency, we see the same polynomial behaviour. This can probably be explained with the same arguments as for local, as they still apply. The increase in latency is a bit sharper, which may be explained by added overhead due to the contention of the network resource.
 
 \subsection*{3.}
 \end{document}
