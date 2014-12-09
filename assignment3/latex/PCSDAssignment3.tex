@@ -160,4 +160,7 @@ For the throughput, we see the same behaviour as before, only that the peak come
 For the latency, we see the same polynomial behaviour. This can probably be explained with the same arguments as for local, as they still apply. The increase in latency is a bit sharper, which may be explained by added overhead due to the contention of the network resource.
 
 \subsection*{3.}
+
+The chosen metrics give a good description of the current level of concurrency in the bookstore, which is not scalable, as writing access to the table is exclusive in the implementation. The large variance seen between runs was dammed by averaging over a number of iterations.
+
 \end{document}
