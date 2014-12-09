@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.acertainbookstore.business.CertainBookStore;
+import com.acertainbookstore.business.ConcurrentCertainBookStore;
 import com.acertainbookstore.client.BookStoreHTTPProxy;
 import com.acertainbookstore.client.StockManagerHTTPProxy;
 import com.acertainbookstore.interfaces.BookStore;
@@ -49,7 +49,7 @@ public class CertainWorkload {
 		BookStore bookStore = null;
 		StockManager stockManager = null;
 		if (localTest) {
-			CertainBookStore store = new CertainBookStore();
+			ConcurrentCertainBookStore store = new ConcurrentCertainBookStore();
 			bookStore = store;
 			stockManager = store;
 		} else {
