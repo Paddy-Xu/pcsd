@@ -21,7 +21,35 @@ Johannes de Fine Licht % Names
 \\Ola Rønning
 \\\today
 \end{center}
-
-
-
+\section{Recovery Concepts}
+\subsection*{1.}
+\subsection*{2.}
+\subsection*{3.}
+\section{ARIES}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
+\texttt{LOG}&&&& \\ 
+&&&&\\ 
+\texttt{LSN} & \texttt{LAST\_LSN} & \texttt{TRAN\_ID} & \texttt{TYPE} & \texttt{PAGE\_ID} \\
+\texttt{1} & \texttt{-} & \texttt{-} & \texttt{begin CKPT} & \texttt{-} \\ 
+\texttt{2} & \texttt{-} & \texttt{-} & \texttt{end CKPT} & \texttt{-} \\ 
+\texttt{3} & \texttt{NULL} & \texttt{T1} & \texttt{update} & \texttt{P2} \\ 
+\texttt{4} & \texttt{3} &\texttt{T1} & \texttt{update} & \texttt{P1} \\ 
+\texttt{5} & \texttt{NULL} & \texttt{T2} & \texttt{update} & \texttt{P5} \\ 
+\texttt{6} & \texttt{NULL} & \texttt{T3} & \texttt{update} & \texttt{P3} \\ 
+\texttt{7} & \texttt{6} & \texttt{T3} & \texttt{commit} & \texttt{-} \\ 
+\texttt{8} & \texttt{5} & \texttt{T2} & \texttt{update} & \texttt{P5} \\
+\texttt{9} & \texttt{8} & \texttt{T2} & \texttt{update} & \texttt{P3} \\
+\texttt{10} & \texttt{6} & \texttt{T3} & \texttt{END} & \texttt{-} \\ 
+\end{tabular*} 
+\section{Programming Task}
+\subsection*{1.}
+\subsection*{2.}
+\subsection*{3.}
+\subsection*{4.}
+\subsection*{5.}
+\subsection*{6.}
+\section{Discussion on the Performance Measurements}
+\subsection*{1.}
+\subsection*{2.}
+\subsection*{3.}
 \end{document}
