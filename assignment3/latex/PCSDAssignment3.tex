@@ -53,10 +53,9 @@ The two situations that will require the log tail to be forced to stable storage
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
 \texttt{Transaction table}&&&& \\ 
 &&&&\\ 
-\texttt{TRAN\_ID} & \texttt{Status} & \texttt{lastLSN} \\
+\texttt{TRAN\_ID} & \texttt{Status} & \texttt{last\_LSN} \\
 \texttt{T1} & \texttt{progress} & \texttt{4} \\ 
 \texttt{T2} & \texttt{progress} & \texttt{9} \\ 
-\texttt{T3} & \texttt{committed} & \texttt{10} \\ 
 \end{tabular*}
 \caption{The transaction table after the crash, based on the log, see table~\ref{log}.}
 \label{trans}
@@ -74,13 +73,14 @@ The two situations that will require the log tail to be forced to stable storage
 \caption{The dirty page table after the crash, based on the log, see table~\ref{log}.}
 \label{dirty}
 \end{table}
-The transaction table, see table~\ref{trans}, is based on the log, see table~\ref{log}. Transaction three has committed, whilst transaction one and two are still in progress, when the crash occurs.\\
+The transaction table, see table~\ref{trans}, is based on the log, see table~\ref{log}. Transaction three has ended and hence is not on the Transaction table, whilst transaction one and two are still in progress, when the crash occurs.\\
 The dirty page table, see table~\ref{dirty}, is based on the log, see table~\ref{log}. The \texttt{recLSN} field represents the first log sequence number identifying a update dirtying a particular page. Pages one, two three and five was written to after the last checkpoint where the dirty page table was flushed.
 \subsection*{2.}
 The set of winner transaction are transactions that have committed and ended before the crash occurs, whilst the loser set represents the transactions that are still in progress. Hence the winner set for the log, see table~\ref{log}, is \{\texttt{T3}\} and the losers set is \{\texttt{T1}, \texttt{T2}\}.
 \subsection*{3.}
-
+The redo phase will begin at LSN three as this is the lowest LSN recorded in the dirty page table. The undo phase will ended at LSN three, the highest LSN will be picked and after the modification it identifies is undone its \texttt{LAST\_LSN} will be added until all transaction recorded in the Transaction table have \texttt{NULL} recorded in their \texttt{LAST\_LSN} field.
 \subsection*{4.}
+
 \subsection*{5.}
 \subsection*{6.}
 \section*{Programming Task}
