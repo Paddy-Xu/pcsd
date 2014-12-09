@@ -21,11 +21,14 @@ Johannes de Fine Licht % Names
 \\Ola Rønning
 \\\today
 \end{center}
-\section{Recovery Concepts}
+\section*{Recovery Concepts}
 \subsection*{1.}
+If a system implements force and no-stealing, the system will not have to implement \texttt{REDO} nor \texttt{UNDO}. The system will not have to implement \texttt{REDO} as the state of system is always consistent on the non-volatile memory, this is because writes are forced to write to the the non-volatile memory. As the system does not implement stealing; non-volatile storage will never have dirty cells, and hence there will be nothing to \texttt{UNDO} after a crash.
 \subsection*{2.}
+The difference between non-volatile and stable storage, is that stable storage can recover from media failure by implementing redundancy. Both kind of storage can recover from crashes. The final kind of storage, volatile storage, cannot recover from neither media failure nor crashes.
 \subsection*{3.}
-\section{ARIES}
+
+\section*{ARIES}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
 \texttt{LOG}&&&& \\ 
 &&&&\\ 
@@ -41,14 +44,14 @@ Johannes de Fine Licht % Names
 \texttt{9} & \texttt{8} & \texttt{T2} & \texttt{update} & \texttt{P3} \\
 \texttt{10} & \texttt{6} & \texttt{T3} & \texttt{END} & \texttt{-} \\ 
 \end{tabular*} 
-\section{Programming Task}
+\section*{Programming Task}
 \subsection*{1.}
 \subsection*{2.}
 \subsection*{3.}
 \subsection*{4.}
 \subsection*{5.}
 \subsection*{6.}
-\section{Discussion on the Performance Measurements}
+\section*{Discussion on the Performance Measurements}
 \subsection*{1.}
 \subsection*{2.}
 \subsection*{3.}
