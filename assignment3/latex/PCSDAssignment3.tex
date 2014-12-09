@@ -4,6 +4,9 @@
 \usepackage{listings}
 \usepackage{tikz}
 \usepackage{amsmath,amssymb}
+
+\usepackage{subcaption}
+
 \tikzset{main node/.style={circle,fill=white!20,draw,minimum size=1cm,inner sep=0pt},}
 \usepackage{verbatim}
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
@@ -116,5 +119,30 @@ The table~\ref{crs} represents the log after recovery has been completed. Neithe
 \section*{Discussion on the Performance Measurements}
 \subsection*{1.}
 \subsection*{2.}
+
+\begin{figure}[htbp]
+\begin{subfigure}[t]{0.5\textwidth}
+\centering
+\includegraphics[scale=0.4]{latency.pdf}
+\caption{Latency vs. number of worker threads}
+\end{subfigure}
+\begin{subfigure}[t]{0.5\textwidth}
+\centering
+\includegraphics[scale=0.4]{throughput.pdf}
+\caption{Throughput vs. number of worker threads.}
+\end{subfigure}
+\end{figure}
+
+First looking at the local tests (red lines):
+\\
+\\
+We see what looks like a polynomial increase in latency as a function of threads. We are not surprised to see an increase in latency when we add threads, since an individual thread will have to wait for more threads to be done with their transactions, before it can acquire a lock and do its own transaction. We suspect that the reason for polynomial increase, is that each thread on average will have to wait for half of all other threads minus itself to be done. For $n$ threads, this give us something like $n\cdot(n/2-1)$, which should give polynomial time.
+\\
+\\
+We see that we have maximum throughput at 4-7 threads. The increase prior to this, could be explained by the rather naive assumption that more concurrency equals more performance, due to factors such as a better utilisation of available cores, hiding I/O and memory latency by scheduling other threads, and so forth. At higher numbers of threads however, we see a decline. Here, the negative scaling factors such as locking and thread management overhead, presumably become dominant over the positive scaling factors of increased concurrency mentioned before.
+\\
+\\
+
+
 \subsection*{3.}
 \end{document}
