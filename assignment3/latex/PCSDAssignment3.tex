@@ -162,6 +162,5 @@ For the latency, we see the same polynomial behaviour. This can probably be expl
 \subsection*{3.}
 
 The chosen metrics give a good description of the current level of concurrency in the bookstore, which is not scalable, as writing access to the table is exclusive in the implementation. The large variance seen between runs was dammed by averaging over a number of iterations.
-To obtain a idea of the bottlenecks in the implementation, utilization could be an interesting metric to test. Measuring utilization would give an idea of potential hardware bottlenecks such as bandwidth.
-
+The only metric that would give us information about the performance of our implemented book store that cannot be inferred from the measurements of throughput and latency is utilization. Measuring utilization could give an idea of which hardware resource are in demand and hence were expansion should be made.
 \end{document}
