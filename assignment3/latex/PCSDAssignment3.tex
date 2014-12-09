@@ -45,7 +45,7 @@ The two situations that will require the log tail to be forced to stable storage
 \texttt{9} & \texttt{8} & \texttt{T2} & \texttt{update} & \texttt{P3} \\
 \texttt{10} & \texttt{6} & \texttt{T3} & \texttt{END} & \texttt{-} \\ 
 \end{tabular*}
-\caption{The log of transaction before a crash.}
+\caption{The log records before a crash.}
 \label{log}
 \end{table} 
 \subsection*{1.}
@@ -84,7 +84,34 @@ The set of LSNs that identify log records may need to be rewritten are \{3, 4, 8
 \subsection*{5.}
 The set of LSNs that identify log records that must be undone during the undo phase is \{9, 8, 5,4,3\}. These are the modification done by the loser transactions before the last checkpoint.
 \subsection*{6.}
-
+\begin{table}[h!]
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll} 
+\texttt{LOG}&&&& \\ 
+&&&&\\ 
+\texttt{LSN} & \texttt{LAST\_LSN} & \texttt{TRAN\_ID} & \texttt{TYPE} & \texttt{PAGE\_ID} \\
+\texttt{1} & \texttt{-} & \texttt{-} & \texttt{begin CKPT} & \texttt{-} \\ 
+\texttt{2} & \texttt{-} & \texttt{-} & \texttt{end CKPT} & \texttt{-} \\ 
+\texttt{3} & \texttt{NULL} & \texttt{T1} & \texttt{update} & \texttt{P2} \\ 
+\texttt{4} & \texttt{3} &\texttt{T1} & \texttt{update} & \texttt{P1} \\ 
+\texttt{5} & \texttt{NULL} & \texttt{T2} & \texttt{update} & \texttt{P5} \\ 
+\texttt{6} & \texttt{NULL} & \texttt{T3} & \texttt{update} & \texttt{P3} \\ 
+\texttt{7} & \texttt{6} & \texttt{T3} & \texttt{commit} & \texttt{-} \\ 
+\texttt{8} & \texttt{5} & \texttt{T2} & \texttt{update} & \texttt{P5} \\
+\texttt{9} & \texttt{8} & \texttt{T2} & \texttt{update} & \texttt{P3} \\
+\texttt{10} & \texttt{6} & \texttt{T3} & \texttt{END} & \texttt{-} \\ 
+\multicolumn{5}{c}{\texttt{CRASH, RESTART}}\\
+\texttt{11} & \texttt{-} & \texttt{T2} & \texttt{CLR;undo LSN 9} & \texttt{P3} \\ 
+\texttt{12} & \texttt{-} & \texttt{T2} & \texttt{CLR;undo LSN 8} & \texttt{P5} \\ 
+\texttt{13} & \texttt{-} & \texttt{T2} & \texttt{CLR;undo LSN 5} & \texttt{P5} \\ 
+\texttt{14} & \texttt{13} &\texttt{T2} & \texttt{END} & \texttt{-} \\ 
+\texttt{15} & \texttt{-} & \texttt{T1} & \texttt{CLR;undo LSN 4} & \texttt{P1} \\ 
+\texttt{16} & \texttt{-} & \texttt{T1} & \texttt{CLR;undo LSN 3} & \texttt{P2} \\ 
+\texttt{17} & \texttt{16} & \texttt{T1} & \texttt{END} & \texttt{-} \\ 
+\end{tabular*}
+\caption{The log records until restart.}
+\label{crs}
+\end{table} 
+The table~\ref{crs} represents the log after recovery has been completed. Neither the analysis nor redo phase will write anything to the log. The redo phase could write end type record if there were any committed transactions that had not been ended, however, this is not the case. The undo phase will iterate over all loser transactions undoing the highest current LSN until the \texttt{LAST\_LSN} is \texttt{NULL} by which the transaction will be ended.
 \section*{Programming Task}
 \section*{Discussion on the Performance Measurements}
 \subsection*{1.}
