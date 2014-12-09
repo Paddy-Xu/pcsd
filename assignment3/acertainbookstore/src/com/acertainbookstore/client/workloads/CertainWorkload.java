@@ -42,7 +42,7 @@ public class CertainWorkload {
 		System.out.println("Running benchmark with " + numConcurrentWorkloadThreads
 		                   + " worker threads.");
 		String serverAddress = "http://localhost:8081";
-		boolean localTest = false;
+		boolean localTest = true;
 		List<WorkerRunResult> workerRunResults = new ArrayList<WorkerRunResult>();
 		List<Future<WorkerRunResult>> runResults =
 		    new ArrayList<Future<WorkerRunResult>>();

@@ -1,5 +1,6 @@
 import re, subprocess
 
+server = subprocess.Popen("./run_server.sh")
 with open("results.csv", "w") as outfile:
     outfile.write("workers,throughput,latency\n")
     for i in range(1, 11):
@@ -18,3 +19,4 @@ with open("results.csv", "w") as outfile:
       throughput /= 10.;
       latency /= 10.;
       outfile.write(str(i) + "," + str(throughput) + "," + str(latency) + "\n")
+server.terminate()
