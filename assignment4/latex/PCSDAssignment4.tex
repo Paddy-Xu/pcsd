@@ -28,20 +28,11 @@ The two networks discussed below are shown in figure~\ref{fig:networks}.
 
 \subsection*{1.}
 
-For the daisy chain to connect all the buildings, both links must be active. Links have the probability of failing $p$, resulting in the added probability of failure $p_\text{daisy} = p + p - p\cdot p = 2p - p^2$.
+For the daisy chain to connect all the buildings, both links must be active. Links have the probability of failing $p$, resulting in the added probability of failure $p_\text{daisy} = p + p - p\cdot p = 2p - p^2$. So the probability of the buildings being connected is $P(connected) = 1 - (2p - p^2)$
 
 \subsection*{2.}
 
-For the fully connected network to fail, any two links would have to fail. This is the probability that any one link of the three links will fail, followed by the probability that any one of the remaining two links will fail. The event of a link failing is denoted as $A$, $B$ and $C$ in the below:
-
-\begin{align*}
-  P(((A\cup B)\cup C)\cap P(A\cup B)) = ((P(A) + P(B) - P(A\cap B)) \\
-  \cap P(C)) \cup (P(A) + P(B) - P(A\cap B)) \\
-  = (P(A) + P(B) - P(A\cap B) + P(C) + P(C) \cdot (P(A) + P(B) - P(A\cap B))) \\
-  \cap (P(A) + P(B) - P(A\cap B)) \\ \Rightarrow
-  p_{\text{full}} = (p + p - p^2 + p + p\cdot(p + p - p^2)) \cdot (p + p - p^2)\\
-  = p^5 - 3p^4 - p^3 + 6p^2
-\end{align*}
+For the fully connected network to fail, any two links would have to fail. This is the probability that any two links fail added with the probability that all 3 links fail. The probability of all 3 links failing, is trivially $P(ABC) = p^{3}$. The probability of 2 links failing is (say for A and B failing) $P(AB) = p^{2}\cdot(1-p)$, because it is the probability of 2 links failing AND one link not failing (hence 1-p). Since this can happen in 3 different ways, each with equal probability, the probability for 2 links failing is $P(AB \cup AC \cup BC) = 3p^2 - 3p^3$ and this added with the probability for all 3 failing, leaves us with $P(AB \cup AC \cup BC \cup ABC) = 3p^2 - 2p^3$. So the probability that all the buildings are connected is just $P(connected) = 1 - (3p^2 - 2p^3)$.
 
 \subsection*{3.}
 
