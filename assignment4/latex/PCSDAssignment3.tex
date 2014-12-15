@@ -54,14 +54,14 @@ Based on the expressions derived above, this results in the probabilities:
   = 10^{-20} - 3\cdot10^{-16} - 10^{-12} + 6\cdot10^{-8} \approx 6\cdot10^{-8}
 \end{align*}
 
-Even though the probability of a single link failing in the daisy network as compared to the full network is a hundred times lower, the more failure-tolerant design of the full network makes it a more reliable design.
+Even though the probability of a single link failing in the daisy network as compared to the full network is a hundred times lower, the more failure-tolerant design of the full network makes it the most reliable.
 
 \subsection*{Assumptions}
 
 In the above it has been assumed that:
 \begin{itemize}
   \item Failures of different links are uncorrelated. In real-world scenarios, the source of a failure can often affect multiple components (lacking dissipation of heat, power outage, meteor strikes).
-  \item The probability of $p$ is a \emph{probability of failure per unit of measurement}, where the unit of measurement can be a metric such as time or iterations. In the above the probability is assumed to be constant, while in normal hardware, the probability of failure is not constant in time/iterations.
+  \item The probability of $p$ is a \emph{probability of failure per unit of measurement}, where the unit of measurement can be a metric such as time or iterations. In the above the probability is assumed to be constant, while in normal hardware, the probability of failure typically is not constant in time/iterations.
 \end{itemize}
 
 \begin{figure}
