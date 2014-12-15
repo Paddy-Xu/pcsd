@@ -52,6 +52,7 @@ In the above it has been assumed that:
 \begin{itemize}
   \item Failures of different links are uncorrelated. In real-world scenarios, the source of a failure can often affect multiple components (lacking dissipation of heat, power outage, meteor strikes).
   \item The probability of $p$ is a \emph{probability of failure per unit of measurement}, where the unit of measurement can be a metric such as time or iterations. In the above the probability is assumed to be constant, while in normal hardware, the probability of failure typically is not constant in time/iterations.
+  \item For the fully connected network, the probability is calculated from the assumption that the two (or three) failures happen within the same measurement. That is, if we measure the system and observe 1 link being down, we have to reset the system (fix the link) for the probability to hold for the next measurement.
 \end{itemize}
 
 \begin{figure}
