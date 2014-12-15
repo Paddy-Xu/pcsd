@@ -1,7 +1,8 @@
 *.aux
 *.class
 *.log
-*.pdf
+# *.pdf
+PCSDAssignment*.pdf
 *.jar
 *.tar.gz
 .metadata
