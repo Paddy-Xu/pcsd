@@ -79,4 +79,9 @@ In the above it has been assumed that:
 \label{fig:networks}
 \end{figure}
 
+\section*{Question 2: Distributed Coordination}
+
+For a two phase commit protocol, there is a risk of indefinite blocking if the coordinator and a participant both experience failure. This can occur after the voting phase, as the other nodes will not know whether the coordinator had already sent a commit or abort message to the crashed participant, and as such cannot proceed before receiving communication from the failed nodes. \\
+For the three phase commit, the nodes first enter a \emph{preCommit} stage, then notify the coordinator that they are ready to commit. The coordinator will wait for acknowledgements from all nodes before sending the \emph{doCommit} message. If the coordinator and a participant fail at this stage, the other nodes will know and agree that both failed nodes were ready and had acknowledged the commit, resolving ambiguity concerning the state of the system which would otherwise requiring blocking following a two phase commit protocol.
+
 \end{document}
