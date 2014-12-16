@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import com.acertainbookstore.utils.BookStoreConstants;
 import com.acertainbookstore.utils.BookStoreException;
 import com.acertainbookstore.utils.BookStoreMessageTag;
 import com.acertainbookstore.utils.BookStoreResult;
+import com.acertainbookstore.utils.BookStoreTimeoutException;
 import com.acertainbookstore.utils.BookStoreUtility;
 
 /**
@@ -44,6 +46,9 @@ public class ReplicationAwareBookStoreHTTPProxy implements BookStore {
 	 												  "/proxy.properties";
 	private volatile long snapshotId = 0;
 	private ArrayList<ServerWorkload> workloads;
+	private final ReentrantReadWriteLock workloadLock =
+	    new ReentrantReadWriteLock(true);
+	private static final int MAX_RETRIES = 5;
 
 	public long getSnapshotId() {
 		return snapshotId;
@@ -102,13 +107,35 @@ public class ReplicationAwareBookStoreHTTPProxy implements BookStore {
 	// }
 
 	private ServerWorkload getLowestWorkload() {
-		ServerWorkload workload = Collections.min(workloads);
-		workload.increment();
-		return workload;
+		workloadLock.readLock().lock();
+		try {
+			ServerWorkload workload = Collections.min(workloads);
+			workload.increment();
+			return workload;
+		} finally {
+			workloadLock.readLock().unlock();
+		}
 	}
 
 	private void returnWorkload(ServerWorkload workload) {
-		workload.decrement();
+		workloadLock.readLock().lock();
+		try {
+			workload.decrement();
+		} finally {
+			workloadLock.readLock().unlock();
+		}
+	}
+
+	private void removeServer(ServerWorkload workload) {
+		workloadLock.writeLock().lock();
+		try {
+			workloads.remove(workload);
+			if (workload.getServer() == masterAddress) {
+				masterAddress = null;
+			}
+		} finally {
+			workloadLock.writeLock().unlock();
+		}
 	}
 
 	public String getMasterServerAddress() {
@@ -124,8 +151,11 @@ public class ReplicationAwareBookStoreHTTPProxy implements BookStore {
 		BookStoreResult result = null;
 
 		ContentExchange exchange = new ContentExchange();
-		String urlString = getMasterServerAddress() + "/"
-				+ BookStoreMessageTag.BUYBOOKS;
+		String urlString = getMasterServerAddress();
+		if (urlString == null) {
+			throw new BookStoreException(BookStoreConstants.MASTER_DOWN);
+		}
+		urlString += "/" + BookStoreMessageTag.BUYBOOKS;
 		exchange.setMethod("POST");
 		exchange.setURL(urlString);
 		exchange.setRequestContent(requestContent);
@@ -141,6 +171,7 @@ public class ReplicationAwareBookStoreHTTPProxy implements BookStore {
 		Buffer requestContent = new ByteArrayBuffer(listISBNsxmlString);
 
 		BookStoreResult result = null;
+		int tries = 0;
 		do {
 			ContentExchange exchange = new ContentExchange();
 			ServerWorkload workload = getLowestWorkload();
@@ -149,8 +180,16 @@ public class ReplicationAwareBookStoreHTTPProxy implements BookStore {
 			exchange.setMethod("POST");
 			exchange.setURL(urlString);
 			exchange.setRequestContent(requestContent);
-			result = BookStoreUtility.SendAndRecv(this.client, exchange);
+			try {
+				result = BookStoreUtility.SendAndRecv(this.client, exchange);
+			} catch (BookStoreTimeoutException err) {
+				removeServer(workload);
+				continue;
+			}
 			returnWorkload(workload);
+			if (++tries > MAX_RETRIES) {
+				throw new BookStoreException(BookStoreConstants.MAX_RETRIES);
+			}
 		} while (result.getSnapshotId() < this.getSnapshotId());
 		this.setSnapshotId(result.getSnapshotId());
 		return (List<Book>) result.getResultList();
@@ -169,6 +208,7 @@ public class ReplicationAwareBookStoreHTTPProxy implements BookStore {
 		}
 
 		BookStoreResult result = null;
+		int tries = 0;
 		do {
 			ServerWorkload workload = getLowestWorkload();
 			String urlString = workload.getServer() + "/"
@@ -176,8 +216,16 @@ public class ReplicationAwareBookStoreHTTPProxy implements BookStore {
 					+ BookStoreConstants.BOOK_NUM_PARAM + "="
 					+ urlEncodedNumBooks;
 			exchange.setURL(urlString);
-			result = BookStoreUtility.SendAndRecv(this.client, exchange);
+			try {
+				result = BookStoreUtility.SendAndRecv(this.client, exchange);
+			} catch (BookStoreTimeoutException err) {
+				removeServer(workload);
+				continue;
+			}
 			returnWorkload(workload);
+			if (++tries > MAX_RETRIES) {
+				throw new BookStoreException(BookStoreConstants.MAX_RETRIES);
+			}
 		} while (result.getSnapshotId() < this.getSnapshotId());
 		this.setSnapshotId(result.getSnapshotId());
 

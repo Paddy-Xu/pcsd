@@ -190,7 +190,7 @@ public final class BookStoreUtility {
 			throw new BookStoreException(
 					BookStoreClientConstants.strERR_CLIENT_REQUEST_EXCEPTION);
 		} else if (exchangeState == HttpExchange.STATUS_EXPIRED) {
-			throw new BookStoreException(
+			throw new BookStoreTimeoutException(
 					BookStoreClientConstants.strERR_CLIENT_REQUEST_TIMEOUT);
 		} else {
 			throw new BookStoreException(
