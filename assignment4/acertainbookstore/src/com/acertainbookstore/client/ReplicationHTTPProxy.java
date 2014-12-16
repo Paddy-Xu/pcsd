@@ -13,14 +13,20 @@ import com.acertainbookstore.utils.BookStoreMessageTag;
 import com.acertainbookstore.utils.BookStoreResponse;
 import com.acertainbookstore.utils.BookStoreUtility;
 
-public class ReplicationHTTPProxy {
+public class ReplicationHTTPProxy implements Replication {
 
+  private final String server;
 	private final HttpClient client;
 
 	/**
 	 * Initialize the client object
 	 */
-	public ReplicationHTTPProxy() throws Exception {
+	public ReplicationHTTPProxy(String server) throws Exception {
+		String urlEnding = "/" + BookStoreMessageTag.REPLICATE;
+		if (!server.endsWith(urlEnding)) {
+			server += urlEnding;
+		}
+		this.server = server;
 		client = new HttpClient();
 		client.setConnectorType(HttpClient.CONNECTOR_SELECT_CHANNEL);
 		client.setMaxConnectionsPerAddress(
@@ -34,14 +40,12 @@ public class ReplicationHTTPProxy {
 		client.start();
 	}
 
-  public ReplicationResult replicate(String server,
-																	   ReplicationRequest request) {
+  public ReplicationResult replicate(ReplicationRequest request) {
 		String serialized = BookStoreUtility.serializeObjectToXMLString(request);
 		ByteArrayBuffer requestContent = new ByteArrayBuffer(serialized);
 		ContentExchange exchange = new ContentExchange();
 		exchange.setMethod("POST");
-    String url = server + "/" + BookStoreMessageTag.REPLICATE;
-		exchange.setURL(url);
+		exchange.setURL(server);
 		exchange.setRequestContent(requestContent);
 		try {
 			BookStoreUtility.SendAndRecv(client, exchange);

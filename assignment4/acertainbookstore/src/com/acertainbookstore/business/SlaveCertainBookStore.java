@@ -2,6 +2,7 @@ package com.acertainbookstore.business;
 
 import java.util.Set;
 
+import com.acertainbookstore.business.ReplicationResult;
 import com.acertainbookstore.interfaces.ReplicatedReadOnlyBookStore;
 import com.acertainbookstore.interfaces.ReplicatedReadOnlyStockManager;
 import com.acertainbookstore.interfaces.Replication;
@@ -64,32 +65,37 @@ public class SlaveCertainBookStore implements ReplicatedReadOnlyBookStore,
 		return result;
 	}
 
-	public void replicate(ReplicationRequest request)
-	    throws BookStoreException {
-		BookStoreMessageTag tag = request.getMessageType();
-		switch (tag) {
-			case ADDBOOKS:
-			  bookStore.addBooks((Set<StockBook>)request.getDataSet());
-				break;
-			case ADDCOPIES:
-			  bookStore.addCopies((Set<BookCopy>)request.getDataSet());
-				break;
-			case BUYBOOKS:
-			  bookStore.buyBooks((Set<BookCopy>)request.getDataSet());
-				break;
-			case UPDATEEDITORPICKS:
-			  bookStore.updateEditorPicks((Set<BookEditorPick>)request.getDataSet());
-				break;
-			case REMOVEALLBOOKS:
-			  bookStore.removeAllBooks();
-				break;
-			case REMOVEBOOKS:
-			  bookStore.removeBooks((Set<Integer>)request.getDataSet());
-				break;
-			default:
-			  throw new BookStoreException("Invalid replication request: " + tag);
+	public ReplicationResult replicate(ReplicationRequest request) {
+		try {
+			BookStoreMessageTag tag = request.getMessageType();
+			switch (tag) {
+				case ADDBOOKS:
+				  bookStore.addBooks((Set<StockBook>)request.getDataSet());
+					break;
+				case ADDCOPIES:
+				  bookStore.addCopies((Set<BookCopy>)request.getDataSet());
+					break;
+				case BUYBOOKS:
+				  bookStore.buyBooks((Set<BookCopy>)request.getDataSet());
+					break;
+				case UPDATEEDITORPICKS:
+				  bookStore.updateEditorPicks(
+					    (Set<BookEditorPick>)request.getDataSet());
+					break;
+				case REMOVEALLBOOKS:
+				  bookStore.removeAllBooks();
+					break;
+				case REMOVEBOOKS:
+				  bookStore.removeBooks((Set<Integer>)request.getDataSet());
+					break;
+				default:
+				  throw new BookStoreException();
+			}
+		} catch (BookStoreException err) {
+			return new ReplicationResult(null, false);
 		}
 		++snapshotId;
+		return new ReplicationResult(null, true);
 	}
 
 }

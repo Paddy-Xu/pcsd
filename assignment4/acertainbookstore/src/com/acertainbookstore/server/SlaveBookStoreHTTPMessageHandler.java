@@ -15,6 +15,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import com.acertainbookstore.business.ReplicationRequest;
+import com.acertainbookstore.business.ReplicationResult;
 import com.acertainbookstore.business.SlaveCertainBookStore;
 import com.acertainbookstore.utils.BookStoreConstants;
 import com.acertainbookstore.utils.BookStoreException;
@@ -139,11 +140,11 @@ public class SlaveBookStoreHTTPMessageHandler extends AbstractHandler {
 		   xml = BookStoreUtility.extractPOSTDataFromRequest(request);
 			 ReplicationRequest replicationRequest = (ReplicationRequest)
 			     BookStoreUtility.deserializeXMLStringToObject(xml);
-			 bookStoreResponse = new BookStoreResponse();
-				try {
-				  myBookStore.replicate(replicationRequest);
-				} catch (BookStoreException err) {
-					bookStoreResponse.setException(err);
+			 ReplicationResult replicationResult =
+			     myBookStore.replicate(replicationRequest);
+        bookStoreResponse = new BookStoreResponse();
+				if (!replicationResult.isReplicationSuccessful()) {
+					bookStoreResponse.setException(new BookStoreException());
 				}
 				response.getWriter().println(
 				    BookStoreUtility.serializeObjectToXMLString(bookStoreResponse));
