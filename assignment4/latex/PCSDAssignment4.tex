@@ -8,6 +8,52 @@
 
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
+% Listings
+\newlength{\eightytt}
+\newcommand{\testthewidth}{%
+  \fontsize{\dimen0}{0}\selectfont
+  \sbox0{x\global\dimen1=0.6em}%
+  \ifdim \dimexpr80\dimen1+23pt>\textwidth
+    \advance\dimen0 by -.1pt
+    \expandafter\testthewidth
+  \else
+    \global\eightytt\dimen0
+  \fi
+}
+\AtBeginDocument{%
+  \dimen0=\csname f@size\endcsname pt
+  \begingroup
+  \ttfamily
+  \testthewidth
+  \endgroup
+  \lstset{
+    % columns=fullflexible,
+    basicstyle=\fontsize{\eightytt}{1.2\eightytt}\ttfamily
+               \color[HTML]{F8F8F2},
+    breaklines=true
+  }
+}
+\lstset{
+  breaklines=true,
+  backgroundcolor=\color[HTML]{282828},
+  framexleftmargin=2pt,
+  inputencoding=utf8,
+  captionpos=b,
+  numbers=none,
+  numberstyle = \fontsize{\eightytt}{1.2\eightytt}
+                \color[HTML]{282828},
+  keywordstyle =    \color[HTML]{F92672}\ttfamily,
+  commentstyle =    \color[HTML]{75715E}\ttfamily,
+  stringstyle =     \color[HTML]{E6DB74}\ttfamily,
+  % identifierstyle = \color[HTML]{F8F8F2}\ttfamily,
+  showstringspaces=false
+}
+\lstdefinestyle{compact} {aboveskip={0.1\baselineskip}}
+\lstdefinestyle{notcompact} {aboveskip={1.2\baselineskip}}
+\lstdefinestyle{numbered} {numbers=left,xleftmargin=0pt}
+\lstdefinestyle{appendix} {backgroundcolor=\color{white}}
+%%%% End listings
+
 \begin{document}
 
 \begin{center}
@@ -33,7 +79,7 @@ For the daisy chain to connect all the buildings, both links must be active. Lin
 \subsection*{2.}
 
 
-For the fully connected network to fail, any two links would have to fail. This is the probability that any two links fail added with the probability that all 3 links fail. The probability of all 3 links failing is $P(ABC) = p^{3}$. The probability of 2 links failing is (say for A and B failing) $P(A\cap B) = p^{2}\cdot(1-p)$, because it is the probability of 2 links failing AND one link not failing (hence 1-p). Since this can happen in 3 different ways, each with equal probability, the probability for 2 links failing is $P(AB \cup AC \cup BC) = 3p^2 - 3p^3$, and this added with the probability for all 3 failing leaves $P(AB \cup AC \cup BC \cup ABC) = 3p^2 - 2p^3$. So the probability that all the buildings are connected is just $P(connected) = 1 - (3p^2 - 2p^3)$.
+For the fully connected network to fail, any two links would have to fail. This is the probability that any two links fail added to the probability that all 3 links fail. The probability of all 3 links failing is $P(ABC) = p^{3}$. The probability of 2 links failing is (say for A and B failing) $P(A\cap B) = p^{2}\cdot(1-p)$, because it is the probability of 2 links failing AND one link not failing (hence $1-p$). Since this can happen in 3 different ways, each with equal probability, the probability for 2 links failing is $P(AB \cup AC \cup BC) = 3p^2 - 3p^3$, and this added with the probability for all 3 failing leaves $P(AB \cup AC \cup BC \cup ABC) = 3p^2 - 2p^3$. So the probability that all the buildings are connected is just $P(connected) = 1 - (3p^2 - 2p^3)$.
 
 % For the fully connected network to fail, any two links would have to fail. This is the probability that any one link of the three links will fail, followed by the probability that any one of the remaining two links will fail. The event of a link failing is denoted as $A$, $B$ and $C$ in the below:
 %
@@ -87,5 +133,38 @@ In the above it has been assumed that:
 
 For a two phase commit protocol, there is a risk of indefinite blocking if the coordinator and a participant both experience failure. This can occur after the voting phase, as the other nodes will not know whether the coordinator had already sent a commit or abort message to the crashed participant, and as such cannot proceed before receiving communication from the failed nodes. \\
 For the three phase commit, the nodes first enter a \emph{preCommit} stage, then notify the coordinator that they are ready to commit. The coordinator will wait for acknowledgements from all nodes before sending the \emph{doCommit} message. If the coordinator and a participant fail at this stage, the other nodes will know and agree that both failed nodes were ready and had acknowledged the commit, resolving ambiguity concerning the state of the system which would otherwise requiring blocking following a two phase commit protocol.
+
+\section*{Questions for Discussion on the Replication mechanism}
+
+\subsection*{1.}
+\subsubsection*{Replication interface}
+A new interface \verb|Replication| is added with the single method signature:
+\begin{lstlisting}[language=Java]
+public ReplicationResult replicate(ReplicationRequest request);
+\end{lstlisting}
+\subsubsection*{Replication client side proxy}
+A new class \verb|ReplicationHTTPProxy| is added as a master bookstore-level HTTP proxy to interacting with slaves. It implements the \verb|Replication| interface as the client side.
+\subsubsection*{Replicator and replication tasks}
+During initialization, the master bookstore will pass the list of slave server addresses to the \verb|CertainBookStoreReplicator| class during construction. The replicator will then instantiate a \verb|ReplicationHTTPProxy| for each slave in the list. When a replication request is made, the replicator promises a future \verb|CertainBookStoreReplicationTask| for each slave, drawn from a fixed size thread pool implementing Java's \verb|ExecutorService| interface. \\
+Each replication task receives an object implementing \verb|Replication| in its constructor along with the request, on which it runs \verb|replicate| with the request when called. In this way it is decoupled with the communication model.
+\subsubsection*{Server side replication}
+The message handler of the slave servers is extended to handle replication messages. The content of the replication will simply be executed on the underlying bookstore server, returning whether the operation has succeeded.
+\subsubsection*{Load balancing}
+Instead of the suggested \verb|getReplicaAddress| method, an alternative method \verb|getLowestWorkload| is used. Each of the client proxies maintains a list of \verb|ServerWorkload| objects, which is a new class carrying a server address and an integer counting the amount of requests currently being handled by this server. When a request is to be sent, the proxy chooses the server with the lowest current load, increments the load, then sends a request. When the request returns, the workload is decremented.
+\subsubsection*{Server failure}
+A new exception class \verb|BookStoreTimeoutException| is added, and is thrown instead of the standard exception by \verb|SendAndRecv| in \verb|BookStoreUtility| when communication with a server times out. When this exception is caught by one of the proxies, the server in question will be removed from the list of servers. This operation is protected by a reader/writer lock to prevent access to the list by readers while a server is being removed. If the master is removed, the master address is set to null. When a write-method attempts to access a master which has failed, it will immediately throw an exception to the client.
+\subsubsection*{Retry limitation}
+To avoid indefinite waiting or accommodate overload of the server, a maximum number of retries for receiving a valid snapshot id has been introduced. If the maximum amount of retries is exceeded, an exception with an appropriate message will be thrown to the client.
+
+\subsection*{2.}
+The replication mechanism ensures that slaves replicate updates concurrently. If any replication operation fails, the slave will be regarded as failed and removed from the master's address table. If a client requests information and the first chosen slave is found to be down, the request will be routed to another server, hiding the failure from the client. If the master fails, the slaves can continue to service read-only requests to clients. A disadvantage is that a timeout from a genuinely busy but alive server will cause it to be regarded as failed. Worse still, if the master marks an alive slave as failed, but one or more clients receive their responses in time, they clients could continue having their requests served by a slave not receiving any replication updates from the master. \\
+The performance from a client point of view should improve significantly for read-operations, as slaves don't have to lock for reads while servicing a write. They are also allowed to occupy distinct machines, adding more hardware to handle requests. \\
+The remaining bottleneck is still performing write-operations, as they require the participation of the master server. Another potential bottleneck would be performing the replications of all slaves, as a very large number of slaves would benefit from having slaves of their own to reduce centralization.
+
+\subsection*{3}
+If the client periodically stores the snapshot id of the proxy it has interacted with up until a failure, it can wait for a new proxy to reach an equal or higher id.
+
+\subsection*{4}
+Analogous to the situation discussed above where the master marks a slave as failed while clients continue to interact with it, a violation of the fail-stop model would mean that the separated slave(s) would never receive replication updates from the master, continuously serving a frozen picture of state of the master to clients until the problem is detected/corrected.
 
 \end{document}
