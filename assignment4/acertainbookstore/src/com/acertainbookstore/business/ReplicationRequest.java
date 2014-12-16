@@ -8,6 +8,7 @@ import com.acertainbookstore.utils.BookStoreMessageTag;
  * ReplicationRequest represents a replication request
  */
 public class ReplicationRequest {
+
 	private Set<?> dataSet;
 	private BookStoreMessageTag messageType;
 

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.acertainbookstore.server;
 
@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
+import com.acertainbookstore.business.ReplicationRequest;
 import com.acertainbookstore.business.SlaveCertainBookStore;
 import com.acertainbookstore.utils.BookStoreConstants;
 import com.acertainbookstore.utils.BookStoreException;
@@ -22,11 +23,11 @@ import com.acertainbookstore.utils.BookStoreResponse;
 import com.acertainbookstore.utils.BookStoreUtility;
 
 /**
- * 
+ *
  * SlaveBookStoreHTTPMessageHandler implements the message handler class which
  * is invoked to handle messages received by the slave book store HTTP server It
  * decodes the HTTP message and invokes the SlaveCertainBookStore API
- * 
+ *
  */
 public class SlaveBookStoreHTTPMessageHandler extends AbstractHandler {
 	private SlaveCertainBookStore myBookStore = null;
@@ -134,8 +135,22 @@ public class SlaveBookStoreHTTPMessageHandler extends AbstractHandler {
 								.serializeObjectToXMLString(bookStoreResponse));
 				break;
 
+		 case REPLICATE:
+		   xml = BookStoreUtility.extractPOSTDataFromRequest(request);
+			 ReplicationRequest replicationRequest = (ReplicationRequest)
+			     BookStoreUtility.deserializeXMLStringToObject(xml);
+			 bookStoreResponse = new BookStoreResponse();
+				try {
+				  myBookStore.replicate(replicationRequest);
+				} catch (BookStoreException err) {
+					bookStoreResponse.setException(err);
+				}
+				response.getWriter().println(
+				    BookStoreUtility.serializeObjectToXMLString(bookStoreResponse));
+				break;
+
 			default:
-				System.out.println("Unhandled message tag");
+				System.out.println("Unhandled message tag: " + messageTag);
 				break;
 			}
 		}

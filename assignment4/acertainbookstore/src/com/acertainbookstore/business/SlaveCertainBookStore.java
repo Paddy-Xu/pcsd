@@ -4,20 +4,23 @@ import java.util.Set;
 
 import com.acertainbookstore.interfaces.ReplicatedReadOnlyBookStore;
 import com.acertainbookstore.interfaces.ReplicatedReadOnlyStockManager;
+import com.acertainbookstore.interfaces.Replication;
 import com.acertainbookstore.utils.BookStoreException;
+import com.acertainbookstore.utils.BookStoreMessageTag;
 import com.acertainbookstore.utils.BookStoreResult;
 
 /**
  * SlaveCertainBookStore is a wrapper over the CertainBookStore class and
  * supports the ReplicatedReadOnlyBookStore and ReplicatedReadOnlyStockManager
  * interfaces
- * 
+ *
  * This class must also handle replication requests sent by the master
- * 
+ *
  */
 public class SlaveCertainBookStore implements ReplicatedReadOnlyBookStore,
-		ReplicatedReadOnlyStockManager {
-	private CertainBookStore bookStore = null;
+		ReplicatedReadOnlyStockManager, Replication {
+
+	private final CertainBookStore bookStore;
 	private long snapshotId = 0;
 
 	public SlaveCertainBookStore() {
@@ -59,6 +62,34 @@ public class SlaveCertainBookStore implements ReplicatedReadOnlyBookStore,
 		BookStoreResult result = new BookStoreResult(
 				bookStore.getBooksByISBN(isbns), snapshotId);
 		return result;
+	}
+
+	public void replicate(ReplicationRequest request)
+	    throws BookStoreException {
+		BookStoreMessageTag tag = request.getMessageType();
+		switch (tag) {
+			case ADDBOOKS:
+			  bookStore.addBooks((Set<StockBook>)request.getDataSet());
+				break;
+			case ADDCOPIES:
+			  bookStore.addCopies((Set<BookCopy>)request.getDataSet());
+				break;
+			case BUYBOOKS:
+			  bookStore.buyBooks((Set<BookCopy>)request.getDataSet());
+				break;
+			case UPDATEEDITORPICKS:
+			  bookStore.updateEditorPicks((Set<BookEditorPick>)request.getDataSet());
+				break;
+			case REMOVEALLBOOKS:
+			  bookStore.removeAllBooks();
+				break;
+			case REMOVEBOOKS:
+			  bookStore.removeBooks((Set<Integer>)request.getDataSet());
+				break;
+			default:
+			  throw new BookStoreException("Invalid replication request: " + tag);
+		}
+		++snapshotId;
 	}
 
 }

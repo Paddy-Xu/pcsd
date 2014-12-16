@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.acertainbookstore.server;
 
@@ -18,8 +18,8 @@ public class SlaveBookStoreHTTPServer {
 	public static void main(String[] args) {
 		SlaveCertainBookStore bookStore = new SlaveCertainBookStore();
 		int listen_on_port = 8081;
-		SlaveBookStoreHTTPMessageHandler handler = new SlaveBookStoreHTTPMessageHandler(
-				bookStore);
+		SlaveBookStoreHTTPMessageHandler handler =
+		    new SlaveBookStoreHTTPMessageHandler(bookStore);
 		String server_port_string = System
 				.getProperty(BookStoreConstants.PROPERTY_KEY_SERVER_PORT);
 		if (server_port_string != null) {

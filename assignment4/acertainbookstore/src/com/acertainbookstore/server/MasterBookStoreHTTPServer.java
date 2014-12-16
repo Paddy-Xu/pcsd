@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.acertainbookstore.server;
 
@@ -15,11 +15,11 @@ public class MasterBookStoreHTTPServer {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) throws BookStoreException {
+	public static void main(String[] args) throws Exception {
 		MasterCertainBookStore bookStore = new MasterCertainBookStore();
 		int listen_on_port = 8081;
-		MasterBookStoreHTTPMessageHandler handler = new MasterBookStoreHTTPMessageHandler(
-				bookStore);
+		MasterBookStoreHTTPMessageHandler handler =
+		    new MasterBookStoreHTTPMessageHandler(bookStore);
 		String server_port_string = System
 				.getProperty(BookStoreConstants.PROPERTY_KEY_SERVER_PORT);
 		if (server_port_string != null) {

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.acertainbookstore.client;
 
 import java.io.FileInputStream;
@@ -29,17 +26,18 @@ import com.acertainbookstore.utils.BookStoreResult;
 import com.acertainbookstore.utils.BookStoreUtility;
 
 /**
- * 
+ *
  * ReplicationAwareBookStoreHTTPProxy implements the client level synchronous
  * CertainBookStore API declared in the BookStore class. It keeps retrying the
  * API until a consistent reply is returned from the replicas
- * 
+ *
  */
 public class ReplicationAwareBookStoreHTTPProxy implements BookStore {
+
 	private HttpClient client;
 	private Set<String> slaveAddresses;
 	private String masterAddress;
-	private String filePath = "/universe/acertainbookstore/proxy.properties";
+	private String filePath = System.getProperty("user.dir") + "proxy.properties";
 	private volatile long snapshotId = 0;
 
 	public long getSnapshotId() {
@@ -57,24 +55,14 @@ public class ReplicationAwareBookStoreHTTPProxy implements BookStore {
 		initializeReplicationAwareMappings();
 		client = new HttpClient();
 		client.setConnectorType(HttpClient.CONNECTOR_SELECT_CHANNEL);
-		client.setMaxConnectionsPerAddress(BookStoreClientConstants.CLIENT_MAX_CONNECTION_ADDRESS); // max
-																									// concurrent
-																									// connections
-																									// to
-																									// every
-																									// address
+		client.setMaxConnectionsPerAddress(
+		    // max concurrent connections to every address
+		    BookStoreClientConstants.CLIENT_MAX_CONNECTION_ADDRESS);
 		client.setThreadPool(new QueuedThreadPool(
-				BookStoreClientConstants.CLIENT_MAX_THREADSPOOL_THREADS)); // max
-																			// threads
-		client.setTimeout(BookStoreClientConstants.CLIENT_MAX_TIMEOUT_MILLISECS); // seconds
-																					// timeout;
-																					// if
-																					// no
-																					// server
-																					// reply,
-																					// the
-																					// request
-																					// expires
+		    // max threads
+				BookStoreClientConstants.CLIENT_MAX_THREADSPOOL_THREADS));
+    // seconds timeout if no server reply, the request expires
+		client.setTimeout(BookStoreClientConstants.CLIENT_MAX_TIMEOUT_MILLISECS);
 		client.start();
 	}
 
