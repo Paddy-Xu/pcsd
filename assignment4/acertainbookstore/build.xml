@@ -73,25 +73,7 @@
                     <jvmarg line="-Dport=8082"/>
                     <classpath refid="acertainbookstore.classpath"/>
                   </java>
-                </sequential>
-                <sequential>
-                  <java classname="com.acertainbookstore.server.SlaveBookStoreHTTPServer" failonerror="true" fork="yes">
-                    <jvmarg line="-Dport=8083"/>
-                    <classpath refid="acertainbookstore.classpath"/>
-                  </java>
-                </sequential>
-                <sequential>
-                  <java classname="com.acertainbookstore.server.SlaveBookStoreHTTPServer" failonerror="true" fork="yes">
-                    <jvmarg line="-Dport=8084"/>
-                    <classpath refid="acertainbookstore.classpath"/>
-                  </java>
-                </sequential>
-                <sequential>
-                  <java classname="com.acertainbookstore.server.SlaveBookStoreHTTPServer" failonerror="true" fork="yes">
-                    <jvmarg line="-Dport=8085"/>
-                    <classpath refid="acertainbookstore.classpath"/>
-                  </java>
-                </sequential>
+                </sequential> 
               </parallel>
             </then>
           </if>

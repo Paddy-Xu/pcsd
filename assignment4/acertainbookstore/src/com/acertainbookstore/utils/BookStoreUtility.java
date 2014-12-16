@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.acertainbookstore.utils;
 
@@ -8,6 +8,9 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
@@ -20,9 +23,11 @@ import com.thoughtworks.xstream.io.xml.StaxDriver;
 /**
  * BookStoreUtility implements utility methods used by bookstore servers and
  * clients
- * 
+ *
  */
 public final class BookStoreUtility {
+
+	private static final Pattern MESSAGE_TAG_PATTERN = Pattern.compile("[A-Z]+");
 
 	public static boolean isInvalidISBN(int isbn) {
 		return (isbn < 1);
@@ -38,7 +43,7 @@ public final class BookStoreUtility {
 
 	/**
 	 * Checks if a string is empty or null
-	 * 
+	 *
 	 * @param str
 	 * @return
 	 */
@@ -49,7 +54,7 @@ public final class BookStoreUtility {
 	/**
 	 * Converts a string to a float if possible else it returns the signal value
 	 * for failure passed as parameter
-	 * 
+	 *
 	 * @param str
 	 * @param failureSignal
 	 * @return
@@ -70,7 +75,7 @@ public final class BookStoreUtility {
 	/**
 	 * Converts a string to a int if possible else it returns the signal value
 	 * for failure passed as parameter
-	 * 
+	 *
 	 * @param str
 	 * @param failureSignal
 	 * @return
@@ -87,27 +92,30 @@ public final class BookStoreUtility {
 
 	/**
 	 * Convert a request URI to the message tags supported in CertainBookStore
-	 * 
+	 *
 	 * @param requestURI
 	 * @return
 	 */
 	public static BookStoreMessageTag convertURItoMessageTag(String requestURI) {
-
 		try {
+			Matcher matcher = MESSAGE_TAG_PATTERN.matcher(requestURI);
+			matcher.find();
 			BookStoreMessageTag messageTag = BookStoreMessageTag
-					.valueOf(requestURI.substring(1).toUpperCase());
+					.valueOf(matcher.group());
 			return messageTag;
 		} catch (IllegalArgumentException ex) {
 			; // Enum type matching failed so non supported message
 		} catch (NullPointerException ex) {
 			; // RequestURI was empty
+		} catch (IllegalStateException ex) {
+			; // Regex didn't match anything
 		}
 		return null;
 	}
 
 	/**
 	 * Serializes an object to an xml string
-	 * 
+	 *
 	 * @param object
 	 * @return
 	 */
@@ -120,7 +128,7 @@ public final class BookStoreUtility {
 
 	/**
 	 * De-serializes an xml string to object
-	 * 
+	 *
 	 * @param xmlObject
 	 * @return
 	 */
@@ -134,7 +142,7 @@ public final class BookStoreUtility {
 	/**
 	 * Manages the sending of an exchange through the client, waits for the
 	 * response and unpacks the response
-	 * 
+	 *
 	 * @param client
 	 * @param exchange
 	 * @return
@@ -192,7 +200,7 @@ public final class BookStoreUtility {
 
 	/**
 	 * Returns the message of the request as a string
-	 * 
+	 *
 	 * @param request
 	 * @return xml string
 	 * @throws IOException
