@@ -64,6 +64,7 @@ public class SlaveCertainBookStore implements ReplicatedReadOnlyBookStore,
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void replicate(ReplicationRequest request)
 	    throws BookStoreException {
 		BookStoreMessageTag tag = request.getMessageType();
