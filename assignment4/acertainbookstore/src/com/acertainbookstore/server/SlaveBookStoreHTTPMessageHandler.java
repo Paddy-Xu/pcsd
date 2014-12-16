@@ -65,7 +65,7 @@ public class SlaveBookStoreHTTPMessageHandler extends AbstractHandler {
 		}
 		// the RequestURI before the switch
 		if (messageTag == null) {
-			System.out.println("Unknown message tag");
+			System.out.println("Unknown message tag for " + requestURI);
 		} else {
 
 			// Write requests should not be handled
