@@ -5,6 +5,8 @@ package com.acertainbookstore.client;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -40,6 +42,7 @@ public class ReplicationAwareStockManagerHTTPProxy implements StockManager {
 	private String filePath = System.getProperty("user.dir") +
 	  											  "/proxy.properties";
 	private long snapshotId = 0;
+	private ArrayList<ServerWorkload> workloads;
 
 	/**
 	 * Initialize the client object
@@ -84,21 +87,34 @@ public class ReplicationAwareStockManagerHTTPProxy implements StockManager {
 		}
 
 		String slaveAddresses = props.getProperty(BookStoreConstants.KEY_SLAVE);
-		for (String slave : slaveAddresses
-				.split(BookStoreConstants.SPLIT_SLAVE_REGEX)) {
+		String[] splitAddresses =
+		    slaveAddresses.split(BookStoreConstants.SPLIT_SLAVE_REGEX);
+		workloads = new ArrayList<ServerWorkload>(splitAddresses.length+1);
+		workloads.add(new ServerWorkload(masterAddress));
+		for (String slave : splitAddresses) {
 			if (!slave.toLowerCase().startsWith("http://")) {
 				slave = new String("http://" + slave);
 			}
 			if (!slave.endsWith("/stock")) {
 				slave = new String(slave + "/stock");
 			}
-
 			this.slaveAddresses.add(slave);
+			workloads.add(new ServerWorkload(slave));
 		}
 	}
 
-	public String getReplicaAddress() {
-		return ""; // TODO
+	// public String getReplicaAddress() {
+	// 	return ""; // TODO
+	// }
+
+	private ServerWorkload getLowestWorkload() {
+		ServerWorkload workload = Collections.min(workloads);
+		workload.increment();
+		return workload;
+	}
+
+	private void returnWorkload(ServerWorkload workload) {
+		workload.decrement();
 	}
 
 	public String getMasterServerAddress() {
@@ -146,11 +162,13 @@ public class ReplicationAwareStockManagerHTTPProxy implements StockManager {
 		BookStoreResult result = null;
 		do {
 			ContentExchange exchange = new ContentExchange();
-			String urlString = getReplicaAddress() + "/"
+			ServerWorkload workload = getLowestWorkload();
+			String urlString = workload.getServer() + "/"
 					+ BookStoreMessageTag.LISTBOOKS;
 
 			exchange.setURL(urlString);
 			result = BookStoreUtility.SendAndRecv(this.client, exchange);
+			returnWorkload(workload);
 		} while (result.getSnapshotId() < this.getSnapshotId());
 		this.setSnapshotId(result.getSnapshotId());
 		return (List<StockBook>) result.getResultList();
@@ -239,7 +257,8 @@ public class ReplicationAwareStockManagerHTTPProxy implements StockManager {
 		BookStoreResult result = null;
 		do {
 			ContentExchange exchange = new ContentExchange();
-			String urlString = getReplicaAddress() + "/"
+			ServerWorkload workload = getLowestWorkload();
+			String urlString = workload.getServer() + "/"
 					+ BookStoreMessageTag.GETSTOCKBOOKSBYISBN;
 			exchange.setMethod("POST");
 			exchange.setURL(urlString);
@@ -250,6 +269,7 @@ public class ReplicationAwareStockManagerHTTPProxy implements StockManager {
 			exchange.setRequestContent(requestContent);
 
 			result = BookStoreUtility.SendAndRecv(this.client, exchange);
+			returnWorkload(workload);
 		} while (result.getSnapshotId() < this.getSnapshotId());
 		this.setSnapshotId(result.getSnapshotId());
 		return (List<StockBook>) result.getResultList();
