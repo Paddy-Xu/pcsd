@@ -1,6 +1,7 @@
 package com.acertainbookstore.utils;
 
 public class BookStoreTimeoutException extends BookStoreException {
+	private static final long serialVersionUID = 1L;
 
 	public BookStoreTimeoutException() {
 		super();

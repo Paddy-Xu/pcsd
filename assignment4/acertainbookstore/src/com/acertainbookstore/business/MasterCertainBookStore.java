@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import com.acertainbookstore.client.ReplicationHTTPProxy;
 import com.acertainbookstore.interfaces.ReplicatedBookStore;
 import com.acertainbookstore.interfaces.ReplicatedStockManager;
 import com.acertainbookstore.interfaces.Replicator;
@@ -22,10 +21,10 @@ import com.acertainbookstore.utils.BookStoreResult;
 /**
  * MasterCertainBookStore is a wrapper over the CertainBookStore class and
  * supports the ReplicatedBookStore and ReplicatedStockManager interfaces
- *
+ * 
  * This class also contains a Replicator which replicates updates to slaves.
- *
- *
+ * 
+ * 
  */
 public class MasterCertainBookStore implements ReplicatedBookStore,
 		ReplicatedStockManager {
@@ -34,14 +33,14 @@ public class MasterCertainBookStore implements ReplicatedBookStore,
 	private HashSet<String> slaveServers;
 	private long snapShotId = 0;
 	private int maxReplicatorThreads = 10;
-	private String filePath = System.getProperty("user.dir") +
-	                          "/server.properties";
+	private String filePath = System.getProperty("user.dir")
+			+ "/server.properties";
 
 	public MasterCertainBookStore() throws Exception {
 		bookStore = new CertainBookStore();
 		initializeSlaveMapping();
 		replicator = new CertainBookStoreReplicator(slaveServers,
-		 																					  maxReplicatorThreads);
+				maxReplicatorThreads);
 	}
 
 	private void initializeSlaveMapping() throws BookStoreException {

@@ -8,14 +8,12 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import com.acertainbookstore.business.ReplicationRequest;
 import com.acertainbookstore.business.ReplicationResult;
 import com.acertainbookstore.interfaces.Replication;
-import com.acertainbookstore.utils.BookStoreException;
 import com.acertainbookstore.utils.BookStoreMessageTag;
-import com.acertainbookstore.utils.BookStoreResponse;
 import com.acertainbookstore.utils.BookStoreUtility;
 
 public class ReplicationHTTPProxy implements Replication {
 
-  private final String server;
+	private final String server;
 	private final HttpClient client;
 
 	/**
@@ -30,18 +28,19 @@ public class ReplicationHTTPProxy implements Replication {
 		client = new HttpClient();
 		client.setConnectorType(HttpClient.CONNECTOR_SELECT_CHANNEL);
 		client.setMaxConnectionsPerAddress(
-		    // max concurrent connections to every address
-		    BookStoreClientConstants.CLIENT_MAX_CONNECTION_ADDRESS);
+		// max concurrent connections to every address
+		BookStoreClientConstants.CLIENT_MAX_CONNECTION_ADDRESS);
 		client.setThreadPool(new QueuedThreadPool(
-		    // max threads
+		// max threads
 				BookStoreClientConstants.CLIENT_MAX_THREADSPOOL_THREADS));
-    // seconds timeout if no server reply, the request expires
+		// seconds timeout if no server reply, the request expires
 		client.setTimeout(BookStoreClientConstants.CLIENT_MAX_TIMEOUT_MILLISECS);
 		client.start();
 	}
 
-  public ReplicationResult replicate(ReplicationRequest request) {
-		String serialized = BookStoreUtility.serializeObjectToXMLString(request);
+	public ReplicationResult replicate(ReplicationRequest request) {
+		String serialized = BookStoreUtility
+				.serializeObjectToXMLString(request);
 		ByteArrayBuffer requestContent = new ByteArrayBuffer(serialized);
 		ContentExchange exchange = new ContentExchange();
 		exchange.setMethod("POST");
@@ -53,6 +52,6 @@ public class ReplicationHTTPProxy implements Replication {
 		} catch (Exception err) {
 			return new ReplicationResult(server, false);
 		}
-  }
+	}
 
 }
