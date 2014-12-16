@@ -29,19 +29,19 @@ import com.acertainbookstore.utils.BookStoreResult;
  */
 public class MasterCertainBookStore implements ReplicatedBookStore,
 		ReplicatedStockManager {
-	private CertainBookStore bookStore = null;
+	private final CertainBookStore bookStore;
+	private final Replicator replicator;
+	private HashSet<String> slaveServers;
 	private long snapShotId = 0;
-	private Replicator replicator = null;
-	private Set<String> slaveServers;
 	private int maxReplicatorThreads = 10;
 	private String filePath = System.getProperty("user.dir") +
 	                          "/server.properties";
 
 	public MasterCertainBookStore() throws Exception {
 		bookStore = new CertainBookStore();
-		replicator = new CertainBookStoreReplicator(new ReplicationHTTPProxy(),
-		 																					  maxReplicatorThreads);
 		initializeSlaveMapping();
+		replicator = new CertainBookStoreReplicator(slaveServers,
+		 																					  maxReplicatorThreads);
 	}
 
 	private void initializeSlaveMapping() throws BookStoreException {

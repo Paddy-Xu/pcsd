@@ -2,6 +2,7 @@ package com.acertainbookstore.business;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,12 +19,15 @@ import com.acertainbookstore.interfaces.Replicator;
 public class CertainBookStoreReplicator implements Replicator {
 
 	private final ExecutorService threadPool;
-	private final ReplicationHTTPProxy proxy;
+	private final HashMap<String, ReplicationHTTPProxy> proxies;
 
-	public CertainBookStoreReplicator(ReplicationHTTPProxy proxy,
-	 															    int maxReplicatorThreads) {
+	public CertainBookStoreReplicator(Set<String> servers,
+	 															    int maxReplicatorThreads) throws Exception {
 		threadPool = Executors.newFixedThreadPool(maxReplicatorThreads);
-		this.proxy = proxy;
+		this.proxies = new HashMap<String, ReplicationHTTPProxy>(servers.size());
+		for (String server : servers) {
+			proxies.put(server, new ReplicationHTTPProxy(server));
+		}
 	}
 
 	public List<Future<ReplicationResult>> replicate(Set<String> slaveServers,
@@ -32,7 +36,7 @@ public class CertainBookStoreReplicator implements Replicator {
 		    new ArrayList<Future<ReplicationResult>>(slaveServers.size());
 		for (String server : slaveServers) {
 			futures.add(threadPool.submit(
-			    new CertainBookStoreReplicationTask(proxy, server, request)));
+			    new CertainBookStoreReplicationTask(proxies.get(server), request)));
 		}
 		return futures;
 	}
