@@ -9,22 +9,22 @@ public class NegativeAmountException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 	private double amount;
-	
-	public NegativeAmountException (String message, double amount) {
+
+	public NegativeAmountException(String message, double amount) {
 		super(message);
 		this.amount = amount;
 	}
 
-	public NegativeAmountException (double amount) {
+	public NegativeAmountException(double amount) {
 		super("The amount "+amount+" is negative");
 		this.amount = amount;
 	}
 
-	public NegativeAmountException () {
+	public NegativeAmountException() {
 		super("The amount is negative");
 	}
 
-	public double getAmount () {
+	public double getAmount() {
 		return amount;
 	}
 }

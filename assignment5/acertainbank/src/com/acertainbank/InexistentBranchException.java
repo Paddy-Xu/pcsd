@@ -9,22 +9,22 @@ public class InexistentBranchException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 	private int branchId;
-	
-	public InexistentBranchException (String message, int branchId) {
+
+	public InexistentBranchException(String message, int branchId) {
 		super(message);
 		this.branchId = branchId;
 	}
 
-	public InexistentBranchException (int branchId) {
+	public InexistentBranchException(int branchId) {
 		super("The branch "+branchId+" does not exist");
 		this.branchId = branchId;
 	}
 
-	public InexistentBranchException () {
+	public InexistentBranchException() {
 		super("The branch does not exist");
 	}
 
-	public int getBranchId () {
+	public int getBranchId() {
 		return branchId;
 	}
 }
