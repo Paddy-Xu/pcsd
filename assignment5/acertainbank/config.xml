@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration partitions="4">
+  <Partitions>
+    <Partition>http://localhost:8081</Partition>
+    <Partition>http://localhost:8082</Partition>
+  </Partitions>
+  <Branches>
+    <Branch partitionId="0" />
+    <Branch partitionId="0" />
+  </Branches>  
+</Configuration>
