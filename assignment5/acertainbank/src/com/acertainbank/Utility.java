@@ -1,5 +1,8 @@
 package com.acertainbank;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.StaxDriver;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -28,5 +31,23 @@ public class Utility {
 		Document document = builder.parse(path);
     return document.getDocumentElement();
   }
+
+	public static String serializeToXml(Object object) {
+		XStream xmlStream = new XStream(new StaxDriver());
+		String xmlString = xmlStream.toXML(object);
+		return xmlString;
+	}
+
+	/**
+	 * De-serializes an xml string to object
+	 *
+	 * @param xmlObject
+	 * @return
+	 */
+	public static Object deserializeFromXml(String xmlString) {
+		XStream xmlStream = new XStream(new StaxDriver());
+		Object object = xmlStream.fromXML(xmlString);
+		return object;
+	}
 
 }

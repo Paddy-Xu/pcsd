@@ -15,6 +15,11 @@ public class Account {
     balance = 0;
   }
 
+  public Account(Account other) {
+    accountId = other.getAccountId();
+    balance = other.getBalance();
+  }
+
   public int getAccountId() {
     return accountId;
   }
@@ -23,14 +28,19 @@ public class Account {
     return balance;
   }
 
-  /**
-   * @param amount Amount to add (positive value) or subtract (negative value)
-   *               from the account.
-   * @return Balance after the change.
-   */
-  public synchronized double changeBalance(double amount) {
+  public synchronized void credit(double amount)
+      throws NegativeAmountException {
+    if (amount < 0) {
+      throw new NegativeAmountException(amount);
+    }
     balance += amount;
-    return balance;
+  }
+
+  public synchronized void debit(double amount) throws NegativeAmountException {
+    if (amount < 0) {
+      throw new NegativeAmountException(amount);
+    }
+    balance -= amount;
   }
 
 }

@@ -6,6 +6,10 @@ import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -13,12 +17,13 @@ import org.xml.sax.SAXException;
 
 public class AccountManagerHTTPProxy {
 
+	private final HttpClient client = new HttpClient();
 	private final ArrayList<String> partitions;
 	private final HashMap<Integer, Integer> branches;
 
 	public AccountManagerHTTPProxy(String configFile)
-	    throws ConfigurationException, IOException, ParserConfigurationException,
-			       SAXException {
+	    throws ConfigurationException, Exception, IOException,
+			       ParserConfigurationException, SAXException {
 		// Retrieve configuration of partitions and branches
 		Element config = Utility.readXmlFile(configFile);
 		// Parse partition configuration
@@ -41,13 +46,36 @@ public class AccountManagerHTTPProxy {
 			}
 			branches.put(i, partitionId);
 		}
+		// Set up HTTP client
+		client.setConnectorType(HttpClient.CONNECTOR_SELECT_CHANNEL);
+		client.setMaxConnectionsPerAddress(
+		    Integer.parseInt(config.getAttribute("maxConnectionsPerAddress")));
+		// TODO: when specifying a max thread pool size, client.start() never
+		//       returns.
+		// client.setThreadPool(new QueuedThreadPool(
+		//     Integer.parseInt(config.getAttribute("threadPool"))));
+		client.setTimeout(
+		    Integer.parseInt(config.getAttribute("timeout")));
+		client.start();
 	}
 
 	public void credit(int branchId, int accountId, double amount)
 	    throws InexistentBranchException, InexistentAccountException,
 			       NegativeAmountException {
-     // NYI
-   }
+    if (!branches.containsKey(branchId)) {
+			throw new InexistentBranchException(branchId);
+		}
+		if (amount < 0) {
+			throw new NegativeAmountException(amount);
+		}
+		// Request request =
+		//     client.newRequest(partitions.get(branches.get(branchId)));
+		// request.setMethod("POST");
+		// request.setCharacterEncoding("UTF-8");
+		// request.setAttribute(BankConstants.METHOD, BankConstants.CREDIT);
+		// request.setAttribute(BankConstants.ACCOUNT_ID, accountId);
+		// request.setAttribute(BankConstants.AMOUNT, amount);
+  }
 
 	public void debit(int branchId, int accountId, double amount)
 	    throws InexistentBranchException, InexistentAccountException,
