@@ -94,8 +94,8 @@ public class BankTest {
   public void testMethods() throws Exception {
     proxy.debit(0, 0, 3000);
     assertTrue(-3000 == proxy.calculateExposure(0));
-    proxy.transfer(0, 3, 0, 3000);
-    assertTrue(0 == proxy.calculateExposure(0));
+    proxy.transfer(0, 3, 0, 2000);
+    assertTrue(0 == proxy.calculateExposure(-1000));
   }
 
 }
