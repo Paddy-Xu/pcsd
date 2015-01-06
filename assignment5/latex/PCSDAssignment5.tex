@@ -71,7 +71,9 @@ Johannes de Fine Licht
 \section*{High-Level Design Decisions and Modularity}
 
 \subsection*{Question 1}
+The partitioning of branches across nodes must be done in the configuring file, hence this must be load balancing across the available partitions must be done by the operator and be known initiation.
 
+In the case where a partition becomes unreachable, all branches allocated on that partition becomes unreachable as well. If a account manager proxy fails all clients will have to restart their session in order to communicate with the account manager, however, there clients connected to other account manager proxies will be unaffected.
 \section*{Atomicity and Fault-Tolerance}
 
 \subsection*{Question 2}
