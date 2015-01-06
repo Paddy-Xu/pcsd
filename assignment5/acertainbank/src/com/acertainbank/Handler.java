@@ -74,6 +74,41 @@ class Handler extends AbstractHandler implements AccountManager {
       } catch (Exception err) {
         response.setError(err);
       }
+    } else if (uri.startsWith("/debit")) {
+      int branchId =
+          Integer.parseInt(Utility.getParam(uri, Constants.BRANCH_ID));
+      int accountId =
+          Integer.parseInt(Utility.getParam(uri, Constants.ACCOUNT_ID));
+      double amount =
+          Double.parseDouble(Utility.getParam(uri, Constants.AMOUNT));
+      try {
+        debit(branchId, accountId, amount);
+      } catch (Exception err) {
+        response.setError(err);
+      }
+    } else if (uri.startsWith("/transfer")) {
+      int branchId =
+          Integer.parseInt(Utility.getParam(uri, Constants.BRANCH_ID));
+      int accountIdOrig =
+          Integer.parseInt(Utility.getParam(uri, Constants.ACCOUNT_ID_ORIG));
+      int accountIdDest =
+          Integer.parseInt(Utility.getParam(uri, Constants.ACCOUNT_ID_DEST));
+      double amount =
+          Double.parseDouble(Utility.getParam(uri, Constants.AMOUNT));
+      try {
+        transfer(branchId, accountIdOrig, accountIdDest, amount);
+      } catch (Exception err) {
+        response.setError(err);
+      }
+    } else if (uri.startsWith("/calculateExposure")) {
+      int branchId =
+          Integer.parseInt(Utility.getParam(uri, Constants.BRANCH_ID));
+      try {
+        double exposure = calculateExposure(branchId);
+        response.setContent(Double.toString(exposure));
+      } catch (Exception err) {
+        response.setError(err);
+      }
     } else {
       response.setError(new CommunicationException("Unknown request"));
     }
@@ -86,35 +121,56 @@ class Handler extends AbstractHandler implements AccountManager {
     baseRequest.setHandled(true);
   }
 
+  private Branch getBranch(int branchId) throws InexistentBranchException {
+    if (!branches.containsKey(branchId)) {
+      throw new InexistentBranchException(branchId);
+    }
+    return branches.get(branchId);
+  }
+
 	public void credit(int branchId, int accountId, double amount)
 	    throws InexistentBranchException, InexistentAccountException,
 			       NegativeAmountException {
-    if (!branches.containsKey(branchId)) {
-      throw new InexistentBranchException(branchId);
+    if (accountId < 0) {
+      throw new InexistentAccountException(accountId);
     }
     if (amount < 0) {
       throw new NegativeAmountException(amount);
     }
-    branches.get(branchId).credit(accountId, amount);
+    getBranch(branchId).credit(accountId, amount);
   }
 
 	public void debit(int branchId, int accountId, double amount)
 	    throws InexistentBranchException, InexistentAccountException,
 			       NegativeAmountException {
-     // NYI
+    if (accountId < 0) {
+      throw new InexistentAccountException(accountId);
+    }
+    if (amount < 0) {
+      throw new NegativeAmountException(amount);
+    }
+    getBranch(branchId).debit(accountId, amount);
    }
 
 	public void transfer(int branchId, int accountIdOrig, int accountIdDest,
 	                     double amount)
 	    throws InexistentBranchException, InexistentAccountException,
 			       NegativeAmountException {
-     // NYI
+     if (accountIdOrig < 0) {
+       throw new InexistentAccountException(accountIdOrig);
+     }
+     if (accountIdDest < 0) {
+       throw new InexistentAccountException(accountIdDest);
+     }
+     if (amount < 0) {
+       throw new NegativeAmountException(amount);
+     }
+     getBranch(branchId).transfer(accountIdOrig, accountIdDest, amount);
    }
 
 	public double calculateExposure(int branchId)
 	    throws InexistentBranchException {
-    // NYI
-		return 0f;
+    return getBranch(branchId).calculateExposure();
   }
 
 }

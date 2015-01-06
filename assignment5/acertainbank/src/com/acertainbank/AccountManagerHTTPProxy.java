@@ -100,11 +100,14 @@ public class AccountManagerHTTPProxy implements AccountManager {
 			if (error instanceof InexistentAccountException) {
 				throw (InexistentAccountException)error;
 			}
+			if (error instanceof InexistentBranchException) {
+				throw (InexistentBranchException)error;
+			}
 			if (error instanceof NegativeAmountException) {
 				throw (NegativeAmountException)error;
 			}
-			if (error instanceof InexistentAccountException) {
-				throw (InexistentAccountException)error;
+			if (error instanceof CommunicationException) {
+				// Cannot throw these :-(
 			}
 			// Else the error is unknown...
 		}
@@ -113,20 +116,126 @@ public class AccountManagerHTTPProxy implements AccountManager {
 	public void debit(int branchId, int accountId, double amount)
 	    throws InexistentBranchException, InexistentAccountException,
 			       NegativeAmountException {
-     // NYI
+    if (!branches.containsKey(branchId)) {
+			throw new InexistentBranchException(branchId);
+		}
+		if (amount < 0) {
+			throw new NegativeAmountException(amount);
+		}
+		ContentExchange exchange = new ContentExchange();
+		exchange.setMethod("POST");
+		exchange.setAddress(partitions.get(branches.get(branchId)));
+		exchange.setRequestURI(
+		    "/" + Constants.DEBIT +
+				"?" + Constants.BRANCH_ID + "=" + Integer.toString(branchId) +
+				"&" + Constants.ACCOUNT_ID + "=" + Integer.toString(accountId) +
+				"&" + Constants.AMOUNT + "=" + Double.toString(amount));
+		Response response = null;
+		try {
+			response = Utility.rpc(client, exchange);
+		} catch (CommunicationException err) {
+			throw new InexistentBranchException("Communication with branch failed",
+																					branchId);
+		}
+		if (!response.wasSuccessful()) {
+			Exception error = response.getError();
+			if (error instanceof InexistentAccountException) {
+				throw (InexistentAccountException)error;
+			}
+			if (error instanceof InexistentBranchException) {
+				throw (InexistentBranchException)error;
+			}
+			if (error instanceof NegativeAmountException) {
+				throw (NegativeAmountException)error;
+			}
+			if (error instanceof CommunicationException) {
+				// Cannot throw these :-(
+			}
+			// Else the error is unknown...
+		}
    }
 
 	public void transfer(int branchId, int accountIdOrig, int accountIdDest,
 	                     double amount)
 	    throws InexistentBranchException, InexistentAccountException,
 			       NegativeAmountException {
-     // NYI
-   }
+    if (!branches.containsKey(branchId)) {
+			throw new InexistentBranchException(branchId);
+		}
+		if (accountIdOrig < 0) {
+			throw new InexistentAccountException(accountIdOrig);
+		}
+		if (accountIdDest < 0) {
+			throw new InexistentAccountException(accountIdDest);
+		}
+		if (amount < 0) {
+			throw new NegativeAmountException(amount);
+		}
+		ContentExchange exchange = new ContentExchange();
+		exchange.setMethod("POST");
+		exchange.setAddress(partitions.get(branches.get(branchId)));
+		exchange.setRequestURI(
+		    "/" + Constants.TRANSFER +
+				"?" + Constants.BRANCH_ID + "=" + Integer.toString(branchId) +
+				"&" + Constants.ACCOUNT_ID_ORIG + "=" +
+				      Integer.toString(accountIdOrig) +
+				"&" + Constants.ACCOUNT_ID_DEST + "=" +
+				      Integer.toString(accountIdDest) +
+				"&" + Constants.AMOUNT + "=" + Double.toString(amount));
+		Response response = null;
+		try {
+			response = Utility.rpc(client, exchange);
+		} catch (CommunicationException err) {
+			throw new InexistentBranchException("Communication with branch failed",
+																					branchId);
+		}
+		if (!response.wasSuccessful()) {
+			Exception error = response.getError();
+			if (error instanceof InexistentAccountException) {
+				throw (InexistentAccountException)error;
+			}
+			if (error instanceof InexistentBranchException) {
+				throw (InexistentBranchException)error;
+			}
+			if (error instanceof NegativeAmountException) {
+				throw (NegativeAmountException)error;
+			}
+			if (error instanceof CommunicationException) {
+				// Cannot throw these :-(
+			}
+			// Else the error is unknown...
+		}
+  }
 
 	public double calculateExposure(int branchId)
 	    throws InexistentBranchException {
-    // NYI
-		return 0f;
+    if (!branches.containsKey(branchId)) {
+			throw new InexistentBranchException(branchId);
+		}
+		ContentExchange exchange = new ContentExchange();
+		exchange.setMethod("POST");
+		exchange.setAddress(partitions.get(branches.get(branchId)));
+		exchange.setRequestURI(
+		    "/" + Constants.CALCULATE_EXPOSURE +
+				"?" + Constants.BRANCH_ID + "=" + Integer.toString(branchId));
+		Response response = null;
+		try {
+			response = Utility.rpc(client, exchange);
+		} catch (CommunicationException err) {
+			throw new InexistentBranchException("Communication with branch failed",
+																					branchId);
+		}
+		if (!response.wasSuccessful()) {
+			Exception error = response.getError();
+			if (error instanceof InexistentBranchException) {
+				throw (InexistentBranchException)error;
+			}
+			if (error instanceof CommunicationException) {
+				// Cannot throw these :-(
+			}
+			// Else the error is unknown...
+		}
+		return Double.parseDouble(response.getContent());
   }
 
 }
