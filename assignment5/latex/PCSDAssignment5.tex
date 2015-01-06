@@ -77,7 +77,7 @@ In the case where a partition becomes unreachable, all branches allocated on tha
 \section*{Atomicity and Fault-Tolerance}
 
 \subsection*{Question 2}
-To ensure serializability of each partition we have used a read-write lock on the accounts. 
+To ensure serializability of each partition we have used a read-write lock on each branch and as well as a read write lock in each account. When a account need to be updated a read lock is held on the branch and a write lock is obtained on the specific account this allows. The lock on the branch is always obtained before the lock on the specific account and is always released  before the branch lock. Hence the locks are always obtained and released in the same order and hence equvilates 2 phase locking.
 \section*{Experiments}
 
 \subsection*{Question 3}
