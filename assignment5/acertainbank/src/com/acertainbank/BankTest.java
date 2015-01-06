@@ -10,12 +10,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-public class CertainBankTest {
+public class BankTest {
 
   private static AccountManagerHTTPProxy proxy;
   private static Handler handler0, handler1;
 
-  public CertainBankTest() {}
+  public BankTest() {}
 
   @BeforeClass
   public static void beforeClass() throws ConfigurationException {

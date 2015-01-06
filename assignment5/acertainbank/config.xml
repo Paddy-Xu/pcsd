@@ -6,26 +6,26 @@
   </Partitions>
   <Branches>
     <Branch id="0" partitionId="0">
-      <Account id="0" amount="0" />
-      <Account id="1" amount="1000" />
-      <Account id="2" amount="2000" />
-      <Account id="3" amount="3000" />
+      <Account id="0" balance="0" />
+      <Account id="1" balance="1000" />
+      <Account id="2" balance="2000" />
+      <Account id="3" balance="3000" />
     </Branch>
     <Branch id="1" partitionId="0">
-      <Account id="0" amount="-1000" />
-      <Account id="1" amount="1000" />
-      <Account id="2" amount="-2000" />
-      <Account id="3" amount="2000" />
+      <Account id="0" balance="-1000" />
+      <Account id="1" balance="1000" />
+      <Account id="2" balance="-2000" />
+      <Account id="3" balance="2000" />
     </Branch>
     <Branch id="2" partitionId="1">
-      <Account id="0" amount="-1000" />
-      <Account id="1" amount="1000" />
-      <Account id="2" amount="-2000" />
-      <Account id="3" amount="2000" />
-      <Account id="4" amount="-3000" />
-      <Account id="5" amount="3000" />
-      <Account id="6" amount="-4000" />
-      <Account id="7" amount="4000" />
+      <Account id="0" balance="-1000" />
+      <Account id="1" balance="1000" />
+      <Account id="2" balance="-2000" />
+      <Account id="3" balance="2000" />
+      <Account id="4" balance="-3000" />
+      <Account id="5" balance="3000" />
+      <Account id="6" balance="-4000" />
+      <Account id="7" balance="4000" />
     </Branch>
   </Branches>
 </Configuration>

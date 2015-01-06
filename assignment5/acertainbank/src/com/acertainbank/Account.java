@@ -1,9 +1,13 @@
 package com.acertainbank;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 public class Account {
 
   private final int accountId;
   private double balance;
+  private final ReentrantReadWriteLock balanceLock =
+      new ReentrantReadWriteLock(true);
 
   public Account(int accountId, double balance) {
     this.accountId = accountId;
@@ -24,23 +28,37 @@ public class Account {
     return accountId;
   }
 
-  public synchronized double getBalance() {
-    return balance;
+  public double getBalance() {
+    balanceLock.readLock().lock();
+    try {
+      return balance;
+    } finally {
+      balanceLock.readLock().unlock();
+    }
   }
 
-  public synchronized void credit(double amount)
-      throws NegativeAmountException {
+  public void credit(double amount) throws NegativeAmountException {
     if (amount < 0) {
       throw new NegativeAmountException(amount);
     }
-    balance += amount;
+    balanceLock.writeLock().lock();
+    try {
+      balance += amount;
+    } finally {
+      balanceLock.writeLock().unlock();
+    }
   }
 
-  public synchronized void debit(double amount) throws NegativeAmountException {
+  public void debit(double amount) throws NegativeAmountException {
     if (amount < 0) {
       throw new NegativeAmountException(amount);
     }
-    balance -= amount;
+    balanceLock.writeLock().lock();
+    try {
+      balance -= amount;
+    } finally {
+      balanceLock.writeLock().unlock();
+    }
   }
 
 }
