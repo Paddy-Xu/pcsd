@@ -1,6 +1,7 @@
 package com.acertainbank;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.servlet.ServletException;
@@ -12,6 +13,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -43,11 +45,23 @@ class Handler extends AbstractHandler implements AccountManager {
 			}
 			Integer branchId = Integer.parseInt(
 					branch.getAttributes().getNamedItem("id").getNodeValue());
+      ArrayList<Account> branchAccounts = new ArrayList<Account>();
+      if (branch.getNodeType() == Node.ELEMENT_NODE) {
+        NodeList accounts = ((Element)branch).getElementsByTagName("Account");
+        for (int j = 0; j < accounts.getLength(); ++j) {
+          NamedNodeMap account = accounts.item(j).getAttributes();
+          int accountId =
+              Integer.parseInt(account.getNamedItem("id").getNodeValue());
+          double balance = Double.parseDouble(
+              account.getNamedItem("balance").getNodeValue());
+          branchAccounts.add(new Account(accountId, balance));
+        }
+      }
 			if (branchId < 0) {
 				throw new ConfigurationException(
 				    "Invalid branch id specified for branch" + branchId);
 			}
-			branches.put(branchId, new Branch());
+			branches.put(branchId, new Branch(branchAccounts));
 		}
   }
 

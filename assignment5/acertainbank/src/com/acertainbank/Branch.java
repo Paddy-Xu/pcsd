@@ -13,9 +13,13 @@ class Branch {
   private final ReentrantReadWriteLock accountsLock =
       new ReentrantReadWriteLock(false);
 
-  public Branch(List<Account> initialAccounts) {
+  public Branch(List<Account> initialAccounts) throws ConfigurationException {
     accounts = new HashMap<Integer, Account>(initialAccounts.size());
     for (Account account : initialAccounts) {
+      int accountId = account.getAccountId();
+      if (accounts.containsKey(accountId)) {
+        throw new ConfigurationException("Duplicate account: " + accountId);
+      }
       accounts.put(account.getAccountId(), new Account(account));
     }
   }
