@@ -1,16 +1,24 @@
 package com.acertainbank;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
-class CertainBankTest {
+public class CertainBankTest {
 
-  public static void main(String args[]) throws Exception {
-    AccountManagerHTTPProxy proxy = new AccountManagerHTTPProxy("config.xml");
-    proxy.credit(0, 0, 1000);
+  public CertainBankTest() {}
+
+  @Test
+  public void testGetParam() {
+    String uri = "?herp=derp&derp=herp";
+    assertEquals("derp", Utility.getParam(uri, "herp"));
+    assertEquals("herp", Utility.getParam(uri, "derp"));
+    assertEquals("", Utility.getParam(uri, "kek"));
   }
 
 }

@@ -74,10 +74,9 @@ public class Utility {
   }
 
   public static String getParam(String uri, String param) {
-    Pattern pattern = Pattern.compile("(?|&)" + param + "=" + "([^(?|&)]*)");
+    Pattern pattern = Pattern.compile("(\\?|&)" + param + "=([a-z]+)");
     Matcher matcher = pattern.matcher(uri);
-    matcher.find();
-    if (matcher.groupCount() <= 3) return "";
+    if (!matcher.find()) return "";
     return matcher.group(2);
   }
 

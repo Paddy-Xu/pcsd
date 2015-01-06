@@ -11,7 +11,7 @@ class Branch {
   // The lock is for modification of the account table only, not for the
   // individual accounts, as they are synchronized internally.
   private final ReentrantReadWriteLock accountsLock =
-      new ReentrantReadWriteLock(true);
+      new ReentrantReadWriteLock(false);
 
   public Branch(List<Account> initialAccounts) {
     accounts = new HashMap<Integer, Account>(initialAccounts.size());
