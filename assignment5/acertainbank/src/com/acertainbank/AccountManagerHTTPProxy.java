@@ -84,9 +84,10 @@ public class AccountManagerHTTPProxy implements AccountManager {
 		exchange.setMethod("POST");
 		exchange.setAddress(partitions.get(branches.get(branchId)));
 		exchange.setRequestURI(
-		    "/" + BankConstants.CREDIT +
-				"?" + BankConstants.ACCOUNT_ID + "=" + Integer.toString(accountId) +
-				"&" + BankConstants.AMOUNT + "=" + Double.toString(amount));
+		    "/" + Constants.CREDIT +
+				"?" + Constants.BRANCH_ID + "=" + Integer.toString(branchId) +
+				"&" + Constants.ACCOUNT_ID + "=" + Integer.toString(accountId) +
+				"&" + Constants.AMOUNT + "=" + Double.toString(amount));
 		Response response = null;
 		try {
 			response = Utility.rpc(client, exchange);

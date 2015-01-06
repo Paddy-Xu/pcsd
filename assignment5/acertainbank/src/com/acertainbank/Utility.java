@@ -8,6 +8,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -69,6 +71,14 @@ public class Utility {
 		} else {
 			throw new CommunicationException();
 		}
+  }
+
+  public static String getParam(String uri, String param) {
+    Pattern pattern = Pattern.compile("(?|&)" + param + "=" + "([^(?|&)]*)");
+    Matcher matcher = pattern.matcher(uri);
+    matcher.find();
+    if (matcher.groupCount() <= 3) return "";
+    return matcher.group(2);
   }
 
 }

@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-class Handler extends AbstractHandler {
+class Handler extends AbstractHandler implements AccountManager {
 
   private final HashMap<Integer, Branch> branches =
       new HashMap<Integer, Branch>();
@@ -63,7 +63,17 @@ class Handler extends AbstractHandler {
 		String uri = request.getRequestURI().toLowerCase();
 
     if (uri.startsWith("/credit")) {
-
+      int branchId =
+          Integer.parseInt(Utility.getParam(uri, Constants.BRANCH_ID));
+      int accountId =
+          Integer.parseInt(Utility.getParam(uri, Constants.ACCOUNT_ID));
+      double amount =
+          Double.parseDouble(Utility.getParam(uri, Constants.AMOUNT));
+      try {
+        credit(branchId, accountId, amount);
+      } catch (Exception err) {
+        response.setError(err);
+      }
     } else {
       response.setError(new CommunicationException("Unknown request"));
     }
@@ -74,6 +84,37 @@ class Handler extends AbstractHandler {
       // Send back an empty response
     }
     baseRequest.setHandled(true);
+  }
+
+	public void credit(int branchId, int accountId, double amount)
+	    throws InexistentBranchException, InexistentAccountException,
+			       NegativeAmountException {
+    if (!branches.containsKey(branchId)) {
+      throw new InexistentBranchException(branchId);
+    }
+    if (amount < 0) {
+      throw new NegativeAmountException(amount);
+    }
+    branches.get(branchId).credit(accountId, amount);
+  }
+
+	public void debit(int branchId, int accountId, double amount)
+	    throws InexistentBranchException, InexistentAccountException,
+			       NegativeAmountException {
+     // NYI
+   }
+
+	public void transfer(int branchId, int accountIdOrig, int accountIdDest,
+	                     double amount)
+	    throws InexistentBranchException, InexistentAccountException,
+			       NegativeAmountException {
+     // NYI
+   }
+
+	public double calculateExposure(int branchId)
+	    throws InexistentBranchException {
+    // NYI
+		return 0f;
   }
 
 }
