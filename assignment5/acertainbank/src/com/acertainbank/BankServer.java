@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.acertainbank;
 
@@ -16,8 +16,8 @@ public class BankServer {
    */
   public static void main(String[] args) throws ConfigurationException {
 
-    String server_port_string = args[1];
-    String partitionId_string = args[2];
+    String server_port_string = args[0];
+    String partitionId_string = args[1];
     int port;
     int partitionId;
 
@@ -28,7 +28,7 @@ public class BankServer {
       throw new ConfigurationException(ex.getMessage());
     }
 
-    Handler accMan = new Handler(partitionId, "../../../config.xml");
+    Handler accMan = new Handler(partitionId, "config.xml");
     Server server = new Server(port);
     server.setHandler(accMan);
 
