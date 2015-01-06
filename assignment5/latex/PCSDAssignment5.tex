@@ -74,12 +74,21 @@ Johannes de Fine Licht
 The partitioning of branches across nodes must be done in the configuring file, hence this must be load balancing across the available partitions must be done by the operator and be known initiation.
 
 In the case where a partition becomes unreachable, all branches allocated on that partition becomes unreachable as well. If a account manager proxy fails all clients will have to restart their session in order to communicate with the account manager, however, there clients connected to other account manager proxies will be unaffected.
+
+\subsubsection*{Configuration file}
+Configuration is read from the file \texttt{config.xml}. It contains entries for partitions and their respective addresses, as well as branches that point to a specific partition. This way the distribution of branches on partitions is fully configurable. The file specifies a number of initial accounts for branches for testing purposes, but the branches also allow adding and removing accounts.
+
 \section*{Atomicity and Fault-Tolerance}
 
 \subsection*{Question 2}
-To ensure serializability of each partition we have used a read-write lock on each branch and as well as a read write lock in each account. When a account need to be updated a read lock is held on the branch and a write lock is obtained on the specific account this allows. The lock on the branch is always obtained before the lock on the specific account and is always released  before the branch lock. Hence the locks are always obtained and released in the same order and hence equvilates 2 phase locking.
+A partition is run on a \texttt{BankServer} instance running a \texttt{Handler} instance, which knows about the branches residing on the partition. \\
+Before-or-after atomicity is achieved at the individual account level. The handler dispatches the request to the appropriate branch instance, which modifies the account is question. Each account has a read/write lock on its balance field, ensuring thread safety. \\
+During a pass over accounts with \texttt{calculateExposure}, account balances not currently being read can change. \\
+By locking just the balance field of individual accounts, maximal concurrency is achieved, as no finer grained locking can be done.
 \section*{Experiments}
 
 \subsection*{Question 3}
+A JUnit test class \texttt{BankTest} has been set up. It uses a \texttt{BeforeClass} method to launch a number of java processes running the partitions specified in the config file. An equivalent \texttt{AfterClass} destroys the processes. \\
+A method \texttt{testMethods} runs a debit and a transfer to check that the exposure after the changes is the appropriate amount with respect to the initial configuration.
 
 \end{document}
