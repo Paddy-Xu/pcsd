@@ -21,6 +21,7 @@ import org.w3c.dom.NodeList;
 public class BankTest {
 
   private static final String CONFIG_FILE = "config.xml";
+  private static final File SERVER_LOG = new File("server.log");
   private static AccountManagerHTTPProxy proxy;
   private static final ArrayList<Process> servers = new ArrayList<Process>();
 
@@ -37,6 +38,9 @@ public class BankTest {
                            "com.acertainbank.BankServer",
                            Integer.toString(port),
                            Integer.toString(partitionId));
+
+    builder.redirectOutput(SERVER_LOG);
+    builder.redirectError(SERVER_LOG);
     return builder.start();
   }
 
@@ -84,6 +88,14 @@ public class BankTest {
     assertEquals("derp", Utility.getParam(uri, "herp"));
     assertEquals("herp", Utility.getParam(uri, "derp"));
     assertEquals("", Utility.getParam(uri, "kek"));
+  }
+
+  @Test
+  public void testMethods() throws Exception {
+    proxy.debit(0, 0, 3000);
+    assertTrue(-3000 == proxy.calculateExposure(0));
+    proxy.transfer(0, 3, 0, 3000);
+    assertTrue(0 == proxy.calculateExposure(0));
   }
 
 }
