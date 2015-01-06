@@ -26,10 +26,14 @@ public class AccountManagerHTTPProxy implements AccountManager {
 	private final HashMap<Integer, Integer> branches;
 
 	public AccountManagerHTTPProxy(String configFile)
-	    throws ConfigurationException, Exception, IOException,
-			       ParserConfigurationException, SAXException {
+	    throws ConfigurationException {
 		// Retrieve configuration of partitions and branches
-		Element config = Utility.readXmlFile(configFile);
+		Element config;
+		try {
+			config = Utility.readXmlFile(configFile);
+		} catch (Exception err) {
+			throw new ConfigurationException(err.getMessage());
+		}
 		// Parse partition configuration
 		NodeList partitionList = config.getElementsByTagName("Partition");
 		partitions = new ArrayList<Address>(partitionList.getLength());
@@ -68,7 +72,11 @@ public class AccountManagerHTTPProxy implements AccountManager {
 		//     Integer.parseInt(config.getAttribute("threadPool"))));
 		client.setTimeout(
 		    Integer.parseInt(config.getAttribute("timeout")));
-		client.start();
+		try {
+			client.start();
+		} catch (Exception err) {
+			throw new ConfigurationException(err.getMessage());
+		}
 	}
 
 	public void credit(int branchId, int accountId, double amount)
