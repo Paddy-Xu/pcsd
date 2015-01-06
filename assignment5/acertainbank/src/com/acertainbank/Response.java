@@ -18,4 +18,8 @@ public class Response {
     return error;
   }
 
+  public void setError(Exception error) {
+    this.error = error;
+  }
+
 }

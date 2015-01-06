@@ -13,11 +13,11 @@ import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
+import org.xml.sax.SAXException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 public class AccountManagerHTTPProxy implements AccountManager {
 
@@ -50,7 +50,13 @@ public class AccountManagerHTTPProxy implements AccountManager {
 				throw new ConfigurationException(
 				    "Invalid partition id specified for branch:" + partitionId);
 			}
-			branches.put(i, partitionId);
+			Integer branchId = Integer.parseInt(
+					branch.getAttributes().getNamedItem("id").getNodeValue());
+			if (branchId < 0) {
+				throw new ConfigurationException(
+				    "Invalid branch id specified for branch" + branchId);
+			}
+			branches.put(branchId, partitionId);
 		}
 		// Set up HTTP client
 		client.setConnectorType(HttpClient.CONNECTOR_SELECT_CHANNEL);

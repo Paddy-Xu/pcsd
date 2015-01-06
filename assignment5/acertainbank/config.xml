@@ -5,7 +5,7 @@
     <Partition address="http://localhost" port="8082" />
   </Partitions>
   <Branches>
-    <Branch partitionId="0" />
-    <Branch partitionId="0" />
+    <Branch id="0" partitionId="0" />
+    <Branch id="1" partitionId="0" />
   </Branches>
 </Configuration>
