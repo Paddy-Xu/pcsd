@@ -1,0 +1,83 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{amsmath,amssymb}
+\usepackage{subcaption}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+% Listings
+\newlength{\eightytt}
+\newcommand{\testthewidth}{%
+  \fontsize{\dimen0}{0}\selectfont
+  \sbox0{x\global\dimen1=0.6em}%
+  \ifdim \dimexpr80\dimen1+23pt>\textwidth
+    \advance\dimen0 by -.1pt
+    \expandafter\testthewidth
+  \else
+    \global\eightytt\dimen0
+  \fi
+}
+\AtBeginDocument{%
+  \dimen0=\csname f@size\endcsname pt
+  \begingroup
+  \ttfamily
+  \testthewidth
+  \endgroup
+  \lstset{
+    % columns=fullflexible,
+    basicstyle=\fontsize{\eightytt}{1.2\eightytt}\ttfamily
+               \color[HTML]{F8F8F2},
+    breaklines=true
+  }
+}
+\lstset{
+  breaklines=true,
+  backgroundcolor=\color[HTML]{282828},
+  framexleftmargin=2pt,
+  inputencoding=utf8,
+  captionpos=b,
+  numbers=none,
+  numberstyle = \fontsize{\eightytt}{1.2\eightytt}
+                \color[HTML]{282828},
+  keywordstyle =    \color[HTML]{F92672}\ttfamily,
+  commentstyle =    \color[HTML]{75715E}\ttfamily,
+  stringstyle =     \color[HTML]{E6DB74}\ttfamily,
+  % identifierstyle = \color[HTML]{F8F8F2}\ttfamily,
+  showstringspaces=false
+}
+\lstdefinestyle{compact} {aboveskip={0.1\baselineskip}}
+\lstdefinestyle{notcompact} {aboveskip={1.2\baselineskip}}
+\lstdefinestyle{numbered} {numbers=left,xleftmargin=0pt}
+\lstdefinestyle{appendix} {backgroundcolor=\color{white}}
+%%%% End listings
+
+\begin{document}
+
+\begin{center}
+\textsc{\LARGE Principles of Computer System Design}\\[0.3cm] % Context
+\HRule \\[0.4cm]
+{ \huge \bfseries Assignment 4}
+\HRule \\[0.4cm]
+\large
+Johannes de Fine Licht
+\\Philip Graae
+\\Ola Rønning
+\\\today
+\end{center}
+
+\section*{High-Level Design Decisions and Modularity}
+
+\subsection*{Question 1}
+
+\section*{Atomicity and Fault-Tolerance}
+
+\subsection*{Question 2}
+To ensure serializability of each partition we have used a read-write lock on the accounts. 
+\section*{Experiments}
+
+\subsection*{Question 3}
+
+\end{document}
