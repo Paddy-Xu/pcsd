@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration partitions="4" maxConnectionsPerAddress="200" threadPool="32" timeout="30000">
+<Configuration maxConnectionsPerAddress="200" threadPool="32" timeout="30000">
   <Partitions>
-    <Partition>http://localhost:8081</Partition>
-    <Partition>http://localhost:8082</Partition>
+    <Partition address="http://localhost" port="8081" />
+    <Partition address="http://localhost" port="8082" />
   </Partitions>
   <Branches>
     <Branch partitionId="0" />
     <Branch partitionId="0" />
-  </Branches>  
+  </Branches>
 </Configuration>

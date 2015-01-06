@@ -6,19 +6,23 @@ import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.jetty.client.Address;
+import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class AccountManagerHTTPProxy {
+public class AccountManagerHTTPProxy implements AccountManager {
 
 	private final HttpClient client = new HttpClient();
-	private final ArrayList<String> partitions;
+	private final ArrayList<Address> partitions;
 	private final HashMap<Integer, Integer> branches;
 
 	public AccountManagerHTTPProxy(String configFile)
@@ -27,11 +31,13 @@ public class AccountManagerHTTPProxy {
 		// Retrieve configuration of partitions and branches
 		Element config = Utility.readXmlFile(configFile);
 		// Parse partition configuration
-		NodeList partitionList =
-		    config.getElementsByTagName("Partitions").item(0).getChildNodes();
-		partitions = new ArrayList<String>(partitionList.getLength());
+		NodeList partitionList = config.getElementsByTagName("Partition");
+		partitions = new ArrayList<Address>(partitionList.getLength());
 		for (int i = 0; i < partitionList.getLength(); ++i) {
-			partitions.add(partitionList.item(i).getNodeValue());
+			NamedNodeMap partition = partitionList.item(i).getAttributes();
+			partitions.add(new Address(
+			    partition.getNamedItem("address").getNodeValue(),
+					Integer.parseInt(partition.getNamedItem("port").getNodeValue())));
 		}
 		// Parse branch configuration
 		NodeList branchList = config.getElementsByTagName("Branch");
@@ -68,13 +74,33 @@ public class AccountManagerHTTPProxy {
 		if (amount < 0) {
 			throw new NegativeAmountException(amount);
 		}
-		// Request request =
-		//     client.newRequest(partitions.get(branches.get(branchId)));
-		// request.setMethod("POST");
-		// request.setCharacterEncoding("UTF-8");
-		// request.setAttribute(BankConstants.METHOD, BankConstants.CREDIT);
-		// request.setAttribute(BankConstants.ACCOUNT_ID, accountId);
-		// request.setAttribute(BankConstants.AMOUNT, amount);
+		ContentExchange exchange = new ContentExchange();
+		exchange.setMethod("POST");
+		exchange.setAddress(partitions.get(branches.get(branchId)));
+		exchange.setRequestURI(
+		    "/" + BankConstants.CREDIT +
+				"?" + BankConstants.ACCOUNT_ID + "=" + Integer.toString(accountId) +
+				"&" + BankConstants.AMOUNT + "=" + Double.toString(amount));
+		Response response = null;
+		try {
+			response = Utility.rpc(client, exchange);
+		} catch (CommunicationException err) {
+			throw new InexistentBranchException("Communication with branch failed",
+																					branchId);
+		}
+		if (!response.wasSuccessful()) {
+			Exception error = response.getError();
+			if (error instanceof InexistentAccountException) {
+				throw (InexistentAccountException)error;
+			}
+			if (error instanceof NegativeAmountException) {
+				throw (NegativeAmountException)error;
+			}
+			if (error instanceof InexistentAccountException) {
+				throw (InexistentAccountException)error;
+			}
+			// Else the error is unknown...
+		}
   }
 
 	public void debit(int branchId, int accountId, double amount)
