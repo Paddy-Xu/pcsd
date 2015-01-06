@@ -84,6 +84,7 @@ Configuration is read from the file \texttt{config.xml}. It contains entries for
 A partition is run on a \texttt{BankServer} instance running a \texttt{Handler} instance, which knows about the branches residing on the partition. \\
 Before-or-after atomicity is achieved at the individual account level. The handler dispatches the request to the appropriate branch instance, which modifies the account is question. Each account has a read/write lock on its balance field, ensuring thread safety. \\
 During a pass over accounts with \texttt{calculateExposure}, account balances not currently being read can change. \\
+The read write lock on the balance field, is always obtained in the same order and hence is equivalent to strict conservative 2 phase locking.
 By locking just the balance field of individual accounts, maximal concurrency is achieved, as no finer grained locking can be done.
 \section*{Experiments}
 
